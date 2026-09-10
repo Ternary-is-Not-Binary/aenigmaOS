@@ -1,0 +1,202 @@
+svc_yield:
+        LDW  R2, [R0+KSV2]
+        LDW  R3, [R0+KSV3]
+        LDW  R4, [R0+KSV4]
+        LDW  R5, [R0+KSV5]
+        LDW  R6, [R0+KSV6]
+        LDW  R8, [R0+KSV8]
+        B    tim_handler
+svc_exit:
+        LDW  R1, [R0+KCUR]
+        LI   R2, -1
+        STW  [R1+27], R2
+        LDW  R3, [R0+KIDX]
+        SH3L R4, R3, 1
+        LI   R5, KWAIT
+        ADD  R4, R4, R5
+        STW  [R4], R0
+        LI   R6, 0
+ex_swp: LI   R2, 30
+        MUL  R4, R6, R2
+        LI   R2, PCB0
+        ADD  R4, R4, R2
+        LDW  R5, [R4+27]
+        LI   R2, 2
+        TCMP R2, R5, R2
+        B3   R2, ex_nxt, ex_kw, ex_nxt
+ex_kw:  LI   R4, KWAIT
+        SH3L R5, R6, 1
+        ADD  R4, R4, R5
+        LDW  R5, [R4]
+        NEG  R2, R3
+        ADD  R2, R2, R5
+        B3   R2, ex_nxt, ex_wak, ex_nxt
+ex_wak: STW  [R4], R0
+        LI   R2, 30
+        MUL  R4, R6, R2
+        LI   R2, PCB0
+        ADD  R4, R4, R2
+        LI   R5, 1
+        STW  [R4+27], R5
+        STW  [R4+0], R0
+ex_nxt: LI   R2, 1
+        ADD  R6, R6, R2
+        LI   R2, -8
+        ADD  R2, R6, R2
+        B3   R2, ex_swp, ex_fin, ex_fin
+ex_fin: B    sched_pick
+svc_putstr:
+        MOV  R3, R1
+ps_l:   LDT  R1, [R3]
+        B3   R1, ps_d, ps_d, ps_e
+ps_d:   B    svc_done
+ps_e:   CALL kcon_put_host
+        LI   R2, 1
+        ADD  R3, R3, R2
+        B    ps_l
+
+svc_spawn:
+        STW  [R0+KA_T], R1
+        STW  [R0+KA_L], R2
+        LI   R5, 0
+ss_l:   LI   R1, PCB0
+        LI   R3, 30
+        MUL  R4, R5, R3
+        ADD  R1, R1, R4
+        LDW  R3, [R1+27]
+        B3   R3, ss_nx, ss_fnd, ss_nx
+ss_nx:  LI   R3, 1
+        ADD  R5, R5, R3
+        LI   R3, -8
+        ADD  R3, R5, R3
+        B3   R3, ss_l, ss_flt, ss_flt
+ss_flt: B    ss_fail
+ss_fnd:
+        LI   R3, 0
+        STW  [R1+0], R3
+        STW  [R1+3], R3
+        STW  [R1+6], R3
+        STW  [R1+9], R3
+        STW  [R1+12], R3
+        STW  [R1+15], R3
+        STW  [R1+21], R3
+        LDW  R3, [R0+KA_L]
+        STW  [R1+18], R3
+        LDW  R3, [R0+KA_T]
+        STW  [R1+24], R3
+        LI   R3, 1
+        STW  [R1+27], R3
+        STW  [R0+KA_TMP2], R5
+        LI   R3, 12
+        MUL  R3, R5, R3
+        LI   R4, KIO0
+        ADD  R3, R3, R4
+        STW  [R0+KA_TMP], R3
+        CALL kio_cur
+        LDW  R4, [R0+KA_TMP]
+        LDW  R5, [R3+0]
+        STW  [R4+0], R5
+        LDW  R5, [R3+3]
+        STW  [R4+3], R5
+        LDW  R5, [R3+6]
+        STW  [R4+6], R5
+        LDW  R5, [R3+9]
+        STW  [R4+9], R5
+        LDW  R1, [R0+KA_TMP2]
+        STW  [R0+KA_T], R1
+        LDW  R3, [R0+KIDX]
+        SH3L R4, R3, 1
+        LI   R5, KG_B0
+        ADD  R5, R5, R4
+        LDW  R3, [R5]
+        LI   R5, KG_L0
+        ADD  R5, R5, R4
+        LDW  R4, [R5]
+        LDW  R5, [R0+KGP_O]
+        LDW  R6, [R0+KIDX]
+        TCMP R2, R5, R6
+        B3   R2, t_sgi, sg_pnd, t_sgi
+t_sgi:  B    sg_par
+sg_pnd: LDW  R5, [R0+KGP_B]
+        TCMP R6, R5, R3
+        B3   R6, t_spb, t_spb, sg_cbu
+t_spb:  B    sg_ckl
+sg_cbu: MOV  R3, R5
+sg_ckl: LDW  R5, [R0+KGP_L]
+        TCMP R6, R5, R4
+        B3   R6, sg_clu, t_spl, t_spl
+t_spl:  B    sg_vld
+sg_clu: MOV  R4, R5
+sg_vld: TCMP R6, R3, R4
+        B3   R6, sg_use, sg_par, sg_par
+sg_use: LI   R6, -1
+        STW  [R0+KGP_O], R6
+        B    sg_st
+sg_par: LDW  R3, [R0+KIDX]
+        SH3L R4, R3, 1
+        LI   R5, KG_B0
+        ADD  R5, R5, R4
+        LDW  R3, [R5]
+        LI   R5, KG_L0
+        ADD  R5, R5, R4
+        LDW  R4, [R5]
+sg_st:  LDW  R1, [R0+KA_T]
+        SH3L R5, R1, 1
+        LI   R6, KG_B0
+        ADD  R6, R6, R5
+        STW  [R6], R3
+        LI   R6, KG_L0
+        ADD  R6, R6, R5
+        STW  [R6], R4
+        B    ss_dt
+ss_fail:
+        LI   R1, -1
+ss_dt:  B    svc_done
+
+
+svc_wait:
+        STW  [R0+KA_T], R1
+        B3   R1, wt_bad, wt_sl, wt_sl
+wt_sl:  LI   R2, -8
+        ADD  R2, R1, R2
+        B3   R2, wt_ns, wt_bad, wt_bad
+wt_ns:  LDW  R3, [R0+KIDX]
+        NEG  R3, R3
+        ADD  R3, R3, R1
+        B3   R3, wt_pcb, wt_bad, wt_pcb
+wt_pcb: LI   R2, 30
+        MUL  R3, R1, R2
+        LI   R2, PCB0
+        ADD  R3, R3, R2
+        LDW  R5, [R3+27]
+        B3   R5, wt_dn, wt_dn, wt_go
+wt_go:  LDW  R1, [R0+KIDX]
+        SH3L R3, R1, 1
+        LI   R2, KWAIT
+        ADD  R3, R3, R2
+        LDW  R5, [R0+KA_T]
+        STW  [R3], R5
+        LDW  R1, [R0+KCUR]
+        LI   R2, 2
+        STW  [R1+27], R2
+        B    svc_yield
+wt_dn:  LI   R1, 0
+        B    svc_done
+wt_bad: LI   R1, -1
+        B    svc_done
+
+svc_guard:
+        B3   R1, gv_no, gv_c1, gv_c1
+gv_c1:  TCMP R4, R1, R2
+        B3   R4, gv_c2, gv_no, gv_no
+gv_c2:  LDW  R3, [R0+KMEMSZ]
+        TCMP R4, R2, R3
+        B3   R4, gv_set, gv_set, gv_no
+gv_set: STW  [R0+KGP_B], R1
+        STW  [R0+KGP_L], R2
+        LDW  R4, [R0+KIDX]
+        STW  [R0+KGP_O], R4
+        LI   R1, 1
+        B    svc_done
+gv_no:  LI   R1, 0
+        B    svc_done

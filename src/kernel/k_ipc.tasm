@@ -1,0 +1,77 @@
+svc_send:
+        STW  [R0+KA_T], R1
+        STW  [R0+KA_L], R2
+        B3   R1, ms_fl, ms_v8, ms_v8
+ms_fl:  B    ms_failz
+ms_v8:  LI   R3, -8
+        ADD  R3, R1, R3
+        B3   R3, ms_vp, ms_fl2, ms_fl2
+ms_fl2: B    ms_failz
+ms_vp:  LI   R3, 30
+        MUL  R4, R1, R3
+        LI   R3, PCB0
+        ADD  R4, R4, R3
+        LDW  R3, [R4+27]
+        B3   R3, ms_fl3, ms_fl3, ms_st
+ms_fl3: B    ms_failz
+ms_st:  LI   R5, -1
+        ADD  R5, R3, R5
+        B3   R5, ms_fl4, ms_box, ms_blk
+ms_fl4: B    ms_failz
+ms_blk:
+        LI   R3, 1
+        STW  [R4+27], R3
+        LDW  R3, [R0+KA_L]
+        STW  [R4+0], R3
+        LDW  R3, [R0+KIDX]
+        STW  [R4+3], R3
+        LI   R1, 1
+        B    ms_dt
+ms_box:
+        LDW  R5, [R0+KA_T]
+        SH3L R5, R5, 1
+        LI   R3, KMFLG
+        ADD  R3, R3, R5
+        LDW  R6, [R3]
+        B3   R6, ms_failz, ms_wr, ms_failz
+ms_wr:  LI   R6, 1
+        STW  [R3], R6
+        LI   R3, KMBOX
+        ADD  R3, R3, R5
+        LDW  R6, [R0+KA_L]
+        STW  [R3], R6
+        LI   R3, KMFROM
+        ADD  R3, R3, R5
+        LDW  R6, [R0+KIDX]
+        STW  [R3], R6
+        LI   R1, 1
+ms_dt:  B    svc_done
+ms_failz:
+        LI   R1, 0
+        B    svc_done
+
+svc_recv:
+        LDW  R5, [R0+KIDX]
+        SH3L R5, R5, 1
+        LI   R3, KMFLG
+        ADD  R3, R3, R5
+        LDW  R6, [R3]
+        B3   R6, mr_blk, mr_blk, mr_rd
+mr_rd:  LI   R6, 0
+        STW  [R3], R6
+        LI   R3, KMBOX
+        ADD  R3, R3, R5
+        LDW  R1, [R3]
+        LI   R3, KMFROM
+        ADD  R3, R3, R5
+        LDW  R4, [R3]
+        STW  [R0+KSV2], R4
+        B    mr_dt
+mr_dt:  B    svc_done
+mr_blk:
+        LDW  R1, [R0+KCUR]
+        LI   R2, 2
+        STW  [R1+27], R2
+        B    mr_y
+mr_y:   B    svc_yield
+

@@ -1,0 +1,42 @@
+svc_done:
+        LDW  R2, [R0+KSV2]
+        LDW  R3, [R0+KSV3]
+        LDW  R4, [R0+KSV4]
+        LDW  R5, [R0+KSV5]
+        LDW  R6, [R0+KSV6]
+        LDW  R8, [R0+KSV8]
+        KRET
+
+fault_handler:
+        LI   R1, msg_gr1
+        CALL kputstr
+        CSRR R1, 4
+        SYS  1
+        LI   R1, msg_gr2
+        CALL kputstr
+        CSRR R1, 6
+        SYS  1
+        LI   R1, msg_grn
+        CALL kputstr
+        B    svc_exit
+
+k_store_bad:
+        LI   R1, msg_stbad
+        CALL kputstr
+        HALT
+
+kputstr:
+        MOV  R3, R1
+kp_l:   LDT  R1, [R3]
+        B3   R1, kp_d, kp_d, kp_e
+kp_e:   SYS  0
+        LI   R2, 1
+        ADD  R3, R3, R2
+        B    kp_l
+kp_d:   RET
+
+k_bad:
+        LI   R1, msg_unk
+        CALL kputstr
+        HALT
+

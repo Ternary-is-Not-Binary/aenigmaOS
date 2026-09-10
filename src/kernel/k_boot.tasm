@@ -1,0 +1,79 @@
+boot:
+        LDW  R4, [R0+KSPL]
+        CSRW R4, 5
+        LI   R1, msg_boot
+        CALL kputstr
+        LI   R6, store_base
+        LDT  R3, [R6]
+        LI   R4, 148
+        TCMP R5, R3, R4
+        B3   R5, t_si, t_so, t_si
+t_si:   B    store_init
+t_so:   B    store_ok
+
+store_init:
+        LI   R3, 148
+        STT  [R6], R3
+        LI   R3, 0
+        STT  [R6+1], R3
+        STT  [R6+2], R3
+        LI   R3, 0
+        STW  [R6+3], R3
+        LDW  R1, [R0+KTOP]
+        NEG  R3, R6
+        ADD  R1, R1, R3
+        SH3R R1, R1, 1
+        SH3L R1, R1, 1
+        LI   R3, -9
+        ADD  R1, R1, R3
+        STW  [R6+6], R1
+        LI   R3, 1
+        STW  [R0+KID], R3
+        LI   R1, msg_store
+        CALL kputstr
+
+store_ok:
+        LI   R1, PCB0
+        LI   R3, 0
+        STW  [R1+0], R3
+        STW  [R1+3], R3
+        STW  [R1+6], R3
+        STW  [R1+9], R3
+        STW  [R1+12], R3
+        STW  [R1+15], R3
+        STW  [R1+21], R3
+        LDW  R3, [R0+K_SPS]
+        STW  [R1+18], R3
+        LDW  R3, [R0+K_PCS]
+        STW  [R1+24], R3
+        LI   R3, 1
+        STW  [R1+27], R3
+        LI   R1, PCB0
+        LI   R3, 30
+        ADD  R1, R1, R3
+        LI   R2, 7
+bz_p:   LI   R3, 0
+        STW  [R1+27], R3
+        LI   R3, 30
+        ADD  R1, R1, R3
+        LI   R3, -1
+        ADD  R2, R2, R3
+        B3   R2, bz_m, bz_m, bz_p
+bz_m:   LI   R1, KMFLG
+        LI   R2, 8
+bz_f:   LI   R3, 0
+        STW  [R1], R3
+        LI   R3, 3
+        ADD  R1, R1, R3
+        LI   R3, -1
+        ADD  R2, R2, R3
+        B3   R2, bz_d, bz_d, bz_f
+bz_d:   LI   R3, PCB0
+        STW  [R0+KCUR], R3
+        LI   R3, 0
+        STW  [R0+KIDX], R3
+        LI   R3, 19
+        CSRW R3, 0
+        LI   R1, PCB0
+        B    sp_go
+

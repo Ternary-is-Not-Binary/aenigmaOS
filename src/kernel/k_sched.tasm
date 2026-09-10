@@ -1,0 +1,88 @@
+tim_handler:
+        STW  [R0+KSC1], R1
+        STW  [R0+KSC2], R2
+        LDW  R1, [R0+KCUR]
+        STW  [R1+6], R3
+        STW  [R1+9], R4
+        STW  [R1+12], R5
+        STW  [R1+15], R6
+        STW  [R1+21], R8
+        CSRR R2, 5
+        STW  [R1+18], R2
+        CSRR R2, 3
+        STW  [R1+24], R2
+        LDW  R2, [R0+KSC2]
+        STW  [R1+3], R2
+        LDW  R2, [R0+KSC1]
+        STW  [R1+0], R2
+        LDW  R3, [R0+KTICKS]
+        LI   R4, 1
+        ADD  R3, R3, R4
+        STW  [R0+KTICKS], R3
+
+sched_pick:
+        LI   R5, 8
+        LI   R6, 0
+sp_loop:
+        LDW  R2, [R0+KIDX]
+        LI   R3, 1
+        ADD  R2, R2, R3
+        LI   R3, -8
+        ADD  R3, R2, R3
+        B3   R3, sp_use, sp_zero, sp_use
+sp_zero:
+        LI   R2, 0
+sp_use:
+        STW  [R0+KIDX], R2
+        LI   R1, PCB0
+        LI   R3, 30
+        MUL  R4, R2, R3
+        ADD  R1, R1, R4
+        LDW  R3, [R1+27]
+        LI   R4, -1
+        ADD  R4, R3, R4
+        B3   R4, sp_next, sp_go, sp_blk
+sp_blk:
+        LI   R6, 1
+sp_next:
+        LI   R3, -1
+        ADD  R5, R5, R3
+        B3   R5, sp_chk, sp_chk, sp_loop
+sp_chk:
+        B3   R6, sp_halt, sp_halt, sp_dead
+sp_dead:
+        LI   R1, msg_dead
+        CALL kputstr
+        HALT
+sp_halt:
+        LI   R1, msg_alld
+        CALL kputstr
+        HALT
+sp_go:
+        LDW  R3, [R1+24]
+        CSRW R3, 3
+        LDW  R3, [R1+18]
+        CSRW R3, 5
+        LDW  R3, [R0+KQ]
+        CSRW R3, 2
+        LDW  R3, [R0+KIDX]
+        SH3L R4, R3, 1
+        LI   R5, KG_B0
+        ADD  R5, R5, R4
+        LDW  R3, [R5]
+        CSRW R3, 7
+        LI   R5, KG_L0
+        ADD  R5, R5, R4
+        LDW  R3, [R5]
+        CSRW R3, 8
+        STW  [R0+KCUR], R1
+        MOV  R2, R1
+        LDW  R1, [R2+0]
+        LDW  R3, [R2+6]
+        LDW  R4, [R2+9]
+        LDW  R5, [R2+12]
+        LDW  R6, [R2+15]
+        LDW  R8, [R2+21]
+        LDW  R2, [R2+3]
+        KRET
+

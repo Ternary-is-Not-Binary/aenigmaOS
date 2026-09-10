@@ -1,0 +1,265 @@
+svc_alloc:
+        STW  [R0+KA_T], R1
+        STW  [R0+KA_L], R2
+        LI   R6, store_base
+al_scan:
+        LDW  R3, [R0+KTOP]
+        NEG  R4, R6
+        ADD  R4, R4, R3
+        LI   R3, -9
+        ADD  R4, R4, R3
+        B3   R4, al_failt, al_room, al_room
+al_failt:
+        B    al_fail
+al_room:
+        LDT  R3, [R6]
+        LI   R4, 148
+        TCMP R5, R3, R4
+        B3   R5, al_pant, al_magok, al_pant
+al_pant:
+        B    al_panic
+al_magok:
+        LDT  R3, [R6+1]
+        B3   R3, al_hopt, al_fit, al_hopt
+al_fit:
+        LDW  R3, [R6+6]
+        LI   R4, 1
+        ADD  R4, R4, R3
+        SH3R R4, R4, 1
+        SH3L R4, R4, 1
+        LI   R5, 9
+        ADD  R4, R4, R5
+        STW  [R0+KA_TMP], R4
+        LDW  R3, [R0+KA_L]
+        LI   R5, 1
+        ADD  R5, R5, R3
+        SH3R R5, R5, 1
+        SH3L R5, R5, 1
+        LI   R3, 9
+        ADD  R5, R5, R3
+        LDW  R4, [R0+KA_TMP]
+        NEG  R3, R5
+        ADD  R3, R3, R4
+        LI   R4, -12
+        ADD  R4, R3, R4
+        B3   R4, al_takechk, al_split, al_split
+al_takechk:
+        B3   R3, al_hopt, al_whole, al_whole
+al_hopt:
+        B    al_hop
+al_whole:
+        LDW  R1, [R6+6]
+        B    al_mkobj
+al_split:
+        STW  [R0+KA_TMP], R3
+        ADD  R4, R5, R6
+        LI   R3, 148
+        STT  [R4], R3
+        LI   R3, 0
+        STT  [R4+1], R3
+        STT  [R4+2], R3
+        LI   R3, 0
+        STW  [R4+3], R3
+        LDW  R3, [R0+KA_TMP]
+        LI   R1, -9
+        ADD  R3, R3, R1
+        STW  [R4+6], R3
+        LDW  R1, [R0+KA_L]
+al_mkobj:
+        LI   R3, 148
+        STT  [R6], R3
+        LDW  R3, [R0+KA_T]
+        STT  [R6+1], R3
+        LI   R3, 0
+        STT  [R6+2], R3
+        STW  [R6+6], R1
+        LDW  R3, [R0+KID]
+        STW  [R6+3], R3
+        MOV  R1, R3
+        LI   R3, 1
+        LDW  R4, [R0+KID]
+        ADD  R4, R4, R3
+        STW  [R0+KID], R4
+        B    svc_done
+al_hop:
+        LDW  R3, [R6+6]
+        LI   R4, 1
+        ADD  R4, R4, R3
+        SH3R R4, R4, 1
+        SH3L R4, R4, 1
+        LI   R3, 9
+        ADD  R4, R4, R3
+        ADD  R6, R6, R4
+        B    al_scan
+al_fail:
+        LI   R1, 0
+        B    svc_done
+al_panic:
+        B    k_store_bad
+
+svc_addr:
+        STW  [R0+KA_T], R1
+        LI   R6, store_base
+aa_scan:
+        LDW  R3, [R0+KTOP]
+        NEG  R4, R6
+        ADD  R4, R4, R3
+        LI   R3, -9
+        ADD  R4, R4, R3
+        B3   R4, aa_fail, aa_room, aa_room
+aa_room:
+        LDT  R3, [R6]
+        LI   R4, 148
+        TCMP R5, R3, R4
+        B3   R5, aa_pant, aa_magok, aa_pant
+aa_pant:
+        B    k_store_bad
+aa_magok:
+        LDT  R3, [R6+1]
+        B3   R3, aa_hop, aa_hop, aa_chk
+aa_chk:
+        LDW  R3, [R6+3]
+        LDW  R4, [R0+KA_T]
+        TCMP R5, R3, R4
+        B3   R5, aa_hop, aa_found, aa_hop
+aa_found:
+        LI   R1, 9
+        ADD  R1, R1, R6
+        B    svc_done
+aa_hop:
+        LDW  R3, [R6+6]
+        LI   R4, 1
+        ADD  R4, R4, R3
+        SH3R R4, R4, 1
+        SH3L R4, R4, 1
+        LI   R3, 9
+        ADD  R4, R4, R3
+        ADD  R6, R6, R4
+        B    aa_scan
+aa_fail:
+        LI   R1, 0
+        B    svc_done
+
+svc_free:
+        STW  [R0+KA_T], R1
+        LI   R6, store_base
+af_scan:
+        LDW  R3, [R0+KTOP]
+        NEG  R4, R6
+        ADD  R4, R4, R3
+        LI   R3, -9
+        ADD  R4, R4, R3
+        B3   R4, af_fail, af_room, af_room
+af_room:
+        LDT  R3, [R6]
+        LI   R4, 148
+        TCMP R5, R3, R4
+        B3   R5, af_pant, af_magok, af_pant
+af_pant:
+        B    k_store_bad
+af_magok:
+        LDT  R3, [R6+1]
+        B3   R3, af_hop, af_hop, af_chk
+af_chk:
+        LDW  R3, [R6+3]
+        LDW  R4, [R0+KA_T]
+        TCMP R5, R3, R4
+        B3   R5, af_hop, af_found, af_hop
+af_found:
+        LI   R3, 0
+        STT  [R6+1], R3
+        LI   R1, 1
+        B    svc_done
+af_hop:
+        LDW  R3, [R6+6]
+        LI   R4, 1
+        ADD  R4, R4, R3
+        SH3R R4, R4, 1
+        SH3L R4, R4, 1
+        LI   R3, 9
+        ADD  R4, R4, R3
+        ADD  R6, R6, R4
+        B    af_scan
+af_fail:
+        LI   R1, 0
+        B    svc_done
+
+svc_enum:
+        STW  [R0+KA_T], R1
+        LI   R3, 0
+        STW  [R0+KA_B], R3
+        LI   R6, store_base
+ae_scan:
+        LDW  R3, [R0+KTOP]
+        NEG  R4, R6
+        ADD  R4, R4, R3
+        LI   R3, -9
+        ADD  R4, R4, R3
+        B3   R4, ae_done, ae_room, ae_room
+ae_room:
+        LDT  R3, [R6]
+        LI   R4, 148
+        TCMP R5, R3, R4
+        B3   R5, ae_bad, ae_magok, ae_bad
+ae_bad: B    k_store_bad
+ae_magok:
+        LDT  R3, [R6+1]
+        B3   R3, ae_hop, ae_hop, ae_chk
+ae_chk:
+        LDW  R3, [R6+3]
+        LDW  R4, [R0+KA_T]
+        NEG  R4, R4
+        ADD  R4, R4, R3
+        B3   R4, ae_hop, ae_hop, ae_gt
+ae_gt:
+        LDW  R4, [R0+KA_B]
+        B3   R4, ae_set, ae_set, ae_cmp
+ae_cmp:
+        NEG  R4, R4
+        ADD  R4, R4, R3
+        B3   R4, ae_set, ae_hop, ae_hop
+ae_set:
+        STW  [R0+KA_B], R3
+ae_hop:
+        LDW  R3, [R6+6]
+        LI   R4, 1
+        ADD  R4, R4, R3
+        SH3R R4, R4, 1
+        SH3L R4, R4, 1
+        LI   R3, 9
+        ADD  R4, R4, R3
+        ADD  R6, R6, R4
+        B    ae_scan
+ae_done:
+        LDW  R1, [R0+KA_B]
+        B    svc_done
+
+kio_cur:
+        LDW  R4, [R0+KCUR]
+        LI   R6, PCB0
+        LI   R3, KIO0
+kio_l:  TCMP R5, R4, R6
+        B3   R5, kio_n, kio_d, kio_n
+kio_n:  LI   R5, 30
+        ADD  R6, R6, R5
+        LI   R5, 12
+        ADD  R3, R3, R5
+        B    kio_l
+kio_d:  RET
+
+svc_iocin:
+        CALL kio_cur
+        STW  [R3+0], R1
+        LI   R5, 0
+        STW  [R3+3], R5
+        LI   R1, 1
+        B    svc_done
+
+svc_iocout:
+        CALL kio_cur
+        STW  [R3+6], R1
+        LI   R5, 0
+        STW  [R3+9], R5
+        LI   R1, 1
+        B    svc_done
+

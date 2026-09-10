@@ -1,0 +1,72 @@
+KQ:     .word 300
+KSPL:   .word 14348904
+KTOP:   .word 13000000
+KFB:    .word 13000000
+K_SPS:  .word 14342004
+K_PCS:  .word shell
+KID:    .word 1
+KTICKS: .word 0
+KCUR:   .word 0
+KIDX:   .word 0
+KSC1:   .word 0
+KSC2:   .word 0
+KSV2:   .word 0
+KSV3:   .word 0
+KSV4:   .word 0
+KSV5:   .word 0
+KSV6:   .word 0
+KSV8:   .word 0
+KA_T:   .word 0
+KA_L:   .word 0
+KA_B:   .word 0
+KA_TMP: .word 0
+KA_TMP2: .word 0
+
+KMEMSZ: .word 14348907
+KG_B0:  .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+KG_L0:  .word 14348907, 14348907, 14348907, 14348907
+        .word 14348907, 14348907, 14348907, 14348907
+KGP_B:  .word 0
+KGP_L:  .word 0
+KGP_O:  .word -1
+
+KMFLG:  .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+KMBOX:  .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+KMFROM: .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+
+KIO0:   .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+
+msg_boot:  .tryte "aenigmaOS K10: SLS kernel online\n\0"
+msg_store: .tryte "store ready\n\0"
+msg_alld:  .tryte "kernel: all procs dead, HALT + world checkpoint\n\0"
+msg_dead:  .tryte "KERNEL PANIC: deadlock (all runnable procs blocked)\n\0"
+msg_unk:   .tryte "KERNEL PANIC: unknown service\n\0"
+msg_stbad: .tryte "KERNEL PANIC: store corrupt\n\0"
+msg_gr1:  .tryte "guard: killed proc, cause \0"
+msg_gr2:  .tryte " arg \0"
+msg_grn:  .tryte "\n\0"
+
+KSCR:   .word 0
+KCC:    .word 0
+KINV:   .word 0
+KST:    .word 0
+KPA:    .word -1
+KPB:    .word -1
+KCHR:   .word 0
+KCRA:   .word 0
+KCRB:   .word 0
+KSAVE:  .word 0
+
+KWAIT:  .word 0, 0, 0, 0
+        .word 0, 0, 0, 0

@@ -1,0 +1,111 @@
+stub_putc:
+        SYS  0
+        RET
+stub_print:
+        SYS  1
+        RET
+stub_getc:
+        SYS  2
+        RET
+stub_yield:
+        SYS  3
+        RET
+stub_exit:
+        SYS  5
+        RET
+stub_ticks:
+        SYS  6
+        RET
+stub_spawn:
+        SYS  7
+        RET
+stub_send:
+        SYS  8
+        RET
+stub_recv:
+        SYS  9
+        RET
+stub_putstr:
+        SYS  10
+        RET
+stub_whoami:
+        SYS  11
+        RET
+stub_iocin:
+        SYS  12
+        RET
+stub_iocout:
+        SYS  13
+        RET
+stub_guard:
+        SYS  14
+        RET
+stub_alloc:
+        SYS  20
+        RET
+stub_addr:
+        SYS  21
+        RET
+stub_free:
+        SYS  22
+        RET
+stub_enum:
+        SYS  23
+        RET
+stub_draw:
+        SYS  30
+        RET
+stub_vsync:
+        SYS  31
+        RET
+stub_ckpt:
+        SYS  40
+        RET
+
+stub_wait:
+        SYS  41
+        RET
+
+KDISP:  .word svc_putc
+        .word svc_print
+        .word svc_getc
+        .word svc_yield
+        .word k_bad
+        .word svc_exit
+        .word svc_ticks
+        .word svc_spawn
+        .word svc_send
+        .word svc_recv
+        .word svc_putstr
+        .word svc_whoami
+        .word svc_iocin
+        .word svc_iocout
+        .word svc_guard
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word svc_alloc
+        .word svc_addr
+        .word svc_free
+        .word svc_enum
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word svc_draw
+        .word svc_vsync
+        .word svc_scrmode
+        .word svc_scrputs
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word svc_ckpt
+        .word svc_wait
+

@@ -1,0 +1,90 @@
+svc_whoami:
+        LDW  R1, [R0+KIDX]
+        B    svc_done
+
+svc_draw:
+        B3   R1, dr_bad, dr_x1, dr_x1
+dr_x1:  LI   R4, -512
+        ADD  R4, R1, R4
+        B3   R4, dr_y0, dr_bad, dr_bad
+dr_y0:  B3   R2, dr_bad, dr_y1, dr_y1
+dr_y1:  LI   R4, -342
+        ADD  R4, R2, R4
+        B3   R4, dr_ok, dr_bad, dr_bad
+dr_ok:  LI   R4, 512
+        MUL  R4, R2, R4
+        ADD  R4, R4, R1
+        LDW  R5, [R0+KFB]
+        ADD  R4, R4, R5
+        STT  [R4], R3
+        LI   R1, 1
+        B    svc_done
+dr_bad: LI   R1, 0
+        B    svc_done
+
+svc_vsync:
+        SYS  3
+        LI   R1, 1
+        B    svc_done
+
+svc_scrmode:
+        B3   R1, sm_q, sm_m0, sm_pos
+sm_q:   LI   R2, -1
+        ADD  R2, R1, R2
+        B3   R2, sm_bad, sm_ans, sm_bad
+sm_ans: LDW  R1, [R0+KSCR]
+        B    svc_done
+sm_m0:  LI   R2, 0
+        B    sm_fire
+sm_pos: LI   R2, -3
+        ADD  R2, R1, R2
+        B3   R2, sm_bad, sm_m3, sm_bad
+sm_m3:  LI   R2, 3
+sm_fire: LDW  R3, [R0+KSCR]
+        TCMP R4, R3, R2
+        B3   R4, sm_set, sm_same, sm_set
+sm_same: LI   R1, 1
+        B    svc_done
+sm_set: STW  [R0+KSCR], R2
+        STW  [R0+KCC], R0
+        STW  [R0+KINV], R0
+        STW  [R0+KST], R0
+        MOV  R1, R2
+        SYS  32
+        B    svc_done
+sm_bad: LI   R1, -1
+        B    svc_done
+
+svc_scrputs:
+        B3   R1, sp_bad, sp_c0, sp_c0
+sp_c0:  LI   R5, -1536
+        ADD  R5, R1, R5
+        B3   R5, sp_c1, sp_c1, sp_bad
+sp_c1:  B3   R2, sp_bad, sp_bad, sp_l0
+sp_l0:  LI   R5, -64
+        ADD  R5, R2, R5
+        B3   R5, sp_l1, sp_l1, sp_bad
+sp_l1:  ADD  R5, R1, R2
+        LI   R6, -1536
+        ADD  R6, R5, R6
+        B3   R6, sp_run, sp_run, sp_bad
+sp_run: LDW  R5, [R0+KFB]
+        ADD  R5, R5, R1
+        STW  [R0+KSAVE], R1
+        LI   R6, 0
+sp_lp:  LDT  R1, [R3]
+        STT  [R5], R1
+        LI   R1, 1
+        ADD  R3, R3, R1
+        ADD  R5, R5, R1
+        ADD  R6, R6, R1
+        TCMP R1, R6, R2
+        B3   R1, sp_lp, sp_ok, sp_ok
+sp_ok:  LDW  R1, [R0+KSAVE]
+        ADD  R1, R1, R6
+        STW  [R0+KCC], R1
+        LI   R1, 1
+        B    svc_done
+sp_bad: LI   R1, -1
+        B    svc_done
+

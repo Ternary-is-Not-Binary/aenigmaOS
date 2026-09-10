@@ -1,0 +1,73 @@
+        .org 0
+reset:  B    boot
+
+        .org 27
+        .word tim_handler
+        .word sys_handler
+        .word fault_handler
+        .word fault_handler
+        .word fault_handler
+
+        .org 81
+        .word stub_putc
+        .word stub_print
+        .word stub_getc
+        .word stub_yield
+        .word k_bad
+        .word stub_exit
+        .word stub_ticks
+        .word stub_spawn
+        .word stub_send
+        .word stub_recv
+        .word stub_putstr
+        .word stub_whoami
+        .word stub_iocin
+        .word stub_iocout
+        .word stub_guard
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word stub_alloc
+        .word stub_addr
+        .word stub_free
+        .word stub_enum
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word stub_draw
+        .word stub_vsync
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word k_bad
+        .word stub_ckpt
+        .word stub_wait
+
+        .org 207
+
+        .include "k_data.tasm"
+        .include "k_boot.tasm"
+        .include "k_sched.tasm"
+        .include "k_disp.tasm"
+        .include "k_con.tasm"
+        .include "k_proc.tasm"
+        .include "k_ipc.tasm"
+        .include "k_vid.tasm"
+        .include "k_sls.tasm"
+        .include "k_sys.tasm"
+        .include "k_stubs.tasm"
+        .include "k_pcb.tasm"
+        .include "../procs/shell.tasm"
+        .include "../procs/pero.tasm"
+
+        .org 150000
+store_base:

@@ -1,0 +1,314 @@
+svc_putc:
+        CALL kio_cur
+        LDW  R4, [R3+6]
+        B3   R4, svc_putc_h, svc_putc_h, svc_putc_o
+svc_putc_o:
+        LDW  R5, [R3+9]
+        ADD  R4, R4, R5
+        STT  [R4], R1
+        LI   R4, 1
+        ADD  R5, R5, R4
+        STW  [R3+9], R5
+        B    svc_done
+svc_putc_h:
+        CALL kcon_put_host
+        B    svc_done
+svc_print:
+        SYS  1
+        B    svc_done
+svc_getc:
+        CALL kio_cur
+        LDW  R4, [R3+0]
+        B3   R4, svc_getc_h, svc_getc_h, svc_getc_o
+svc_getc_o:
+        LDW  R5, [R3+3]
+        ADD  R4, R4, R5
+        LDT  R1, [R4]
+        B3   R1, svc_getc_rd, svc_getc_rd, svc_getc_adv
+svc_getc_rd:
+        B    svc_done
+svc_getc_adv:
+        LI   R4, 1
+        ADD  R5, R5, R4
+        STW  [R3+3], R5
+        B    svc_done
+svc_getc_h:
+        SYS  2
+        B    svc_done
+svc_ticks:
+        LDW  R1, [R0+KTICKS]
+        B    svc_done
+svc_ckpt:
+        SYS  40
+        LI   R1, 1
+        B    svc_done
+
+kcon_put_host:
+        LI   R2, KCRA
+        STW  [R2], R8
+        LI   R2, KCRB
+        STW  [R2], R3
+        STW  [R0+KCHR], R1
+        CALL k_scr_char
+        LDW  R1, [R0+KCHR]
+        LI   R2, KCRB
+        LDW  R3, [R2]
+        SYS  0
+        LI   R2, KCRA
+        LDW  R8, [R2]
+        RET
+
+k_scr_char:
+        LDW  R2, [R0+KCHR]
+        LDW  R3, [R0+KSCR]
+        LI   R4, 3
+        TCMP R5, R3, R4
+        B3   R5, ks_ret, ks_go, ks_ret
+ks_ret: RET
+ks_go:  LDW  R3, [R0+KST]
+        B3   R3, ks_ret, ks_norm, kst_ee
+kst_ee: B    ks_esc
+ks_norm:
+        LI   R4, 27
+        TCMP R5, R2, R4
+        B3   R5, ks_n10, ks_escr, ks_n10
+ks_escr: LI   R4, 1
+        STW  [R0+KST], R4
+        B    ks_ret
+ks_n10: LI   R4, 10
+        TCMP R5, R2, R4
+        B3   R5, ks_n8, ks_nl, ks_n8
+ks_n8:  LI   R4, 8
+        TCMP R5, R2, R4
+        B3   R5, ks_nlo, ks_bs, ks_nlo
+ks_bs:  LDW  R4, [R0+KCC]
+        B3   R4, ks_ret, ks_ret, ks_bd
+ks_bd:  LI   R5, -1
+        ADD  R4, R4, R5
+        STW  [R0+KCC], R4
+        B    ks_ret
+ks_nlo: LI   R4, 32
+        TCMP R5, R2, R4
+        B3   R5, ks_ret, ks_wh1, ks_wh1
+ks_wh1: LI   R4, 194
+        TCMP R5, R2, R4
+        B3   R5, ks_wch, ks_wch, ks_ret
+ks_wch: LDW  R3, [R0+KFB]
+        LDW  R4, [R0+KCC]
+        ADD  R5, R3, R4
+        STT  [R5], R2
+        LI   R6, 1536
+        ADD  R5, R5, R6
+        LDW  R6, [R0+KINV]
+        STT  [R5], R6
+        LI   R6, 1
+        ADD  R4, R4, R6
+        STW  [R0+KCC], R4
+        LI   R6, 1536
+        TCMP R5, R4, R6
+        B3   R5, ksr_q, ks_scd, ks_scd
+ksr_q:  B    ks_ret
+ks_scd: CALL ks_sc1
+        B    ks_ret
+ks_nl:  LDW  R3, [R0+KCC]
+        MOV  R4, R3
+ks_nlm: LI   R5, 64
+        TCMP R6, R4, R5
+        B3   R6, ks_nld, ks_nds, ks_nds
+ks_nds: LI   R5, -64
+        ADD  R4, R4, R5
+        B    ks_nlm
+ks_nld: NEG  R4, R4
+        ADD  R3, R3, R4
+        LI   R5, 64
+        ADD  R3, R3, R5
+        STW  [R0+KCC], R3
+        LI   R5, 1536
+        TCMP R6, R3, R5
+        B3   R6, ks_nvs, ks_sce, ks_sce
+ks_sce: CALL ks_sc1
+ks_nvs: SYS  3
+        B    ks_ret
+ks_esc: LI   R4, 1
+        TCMP R5, R3, R4
+        B3   R5, ks_par, ks_s1, ks_par
+ks_s1:  LI   R4, 91
+        TCMP R5, R2, R4
+        B3   R5, ks_drop, ks_s1y, ks_drop
+ks_s1y: LI   R4, 2
+        STW  [R0+KST], R4
+        LI   R4, -1
+        STW  [R0+KPA], R4
+        STW  [R0+KPB], R4
+        B    ks_ret
+ks_drop: LI   R4, 0
+        STW  [R0+KST], R4
+        B    ks_ret
+ks_par: LI   R4, 59
+        TCMP R5, R2, R4
+        B3   R5, ks_pdig, ks_psemi, ks_pdig
+ks_psemi:
+        LI   R4, 3
+        STW  [R0+KST], R4
+        B    ks_ret
+ks_pdig:
+        LI   R5, -48
+        ADD  R5, R2, R5
+        B3   R5, ks_apply, ks_pd1, ks_pd1
+ks_pd1: LI   R6, 10
+        TCMP R4, R5, R6
+        B3   R4, ks_pacc, ks_apply, ks_apply
+ks_pacc:
+        LDW  R6, [R0+KST]
+        LI   R4, 3
+        TCMP R2, R6, R4
+        B3   R2, ks_pca, ks_pca, ks_pcb
+ks_pca: LDW  R4, [R0+KPA]
+        B    ks_padd
+ks_pcb: LDW  R4, [R0+KPB]
+ks_padd:
+        B3   R4, ks_pd0, ks_pd0, ks_pdm
+ks_pd0: LI   R4, 0
+        ADD  R4, R4, R5
+        B    ks_pst
+ks_pdm: LI   R6, 10
+        MUL  R4, R4, R6
+        ADD  R4, R4, R5
+ks_pst: LDW  R5, [R0+KST]
+        LI   R6, 3
+        TCMP R2, R5, R6
+        B3   R2, ks_psa, ks_psa, ks_psb
+ks_psa: STW  [R0+KPA], R4
+        B    ks_ret
+ks_psb: STW  [R0+KPB], R4
+        B    ks_ret
+ks_apply:
+        LDW  R4, [R0+KPA]
+        LI   R5, 72
+        TCMP R6, R2, R5
+        B3   R6, ks_apj, ks_aph, ks_apj
+ks_aph: B3   R4, ks_home, ks_home, ks_ahr
+ks_home: LI   R4, 0
+        STW  [R0+KCC], R4
+        B    ks_drop
+ks_ahr: LI   R5, -1
+        ADD  R4, R4, R5
+        LI   R5, 23
+        TCMP R6, R4, R5
+        B3   R6, ks_ahg, ks_ahg, ks_ahx
+ks_ahx: LI   R4, 23
+ks_ahg: LI   R5, 64
+        MUL  R4, R4, R5
+        LDW  R5, [R0+KPB]
+        B3   R5, ks_ah0, ks_ah1, ks_ah1
+ks_ah0: LI   R5, 0
+        B    ks_ah2
+ks_ah1: LI   R6, -1
+        ADD  R5, R5, R6
+        LI   R6, 63
+        TCMP R3, R5, R6
+        B3   R3, ks_ah2, ks_ah2, ks_ahy
+ks_ahy: LI   R5, 63
+ks_ah2: ADD  R4, R4, R5
+        STW  [R0+KCC], R4
+        B    ks_drop
+ks_apj: LI   R5, 74
+        TCMP R6, R2, R5
+        B3   R6, ks_apk, ks_apJ, ks_apk
+ks_apJ: LI   R5, 2
+        TCMP R6, R4, R5
+        B3   R6, ksd_jj, ks_clr, ksd_jj
+ksd_jj: B    ks_drop
+ks_clr: LDW  R3, [R0+KFB]
+        LI   R4, 0
+        LI   R5, 3072
+        LI   R2, 0
+ks_clr1: ADD  R6, R3, R4
+        STT  [R6], R2
+        LI   R6, 1
+        ADD  R4, R4, R6
+        TCMP R6, R4, R5
+        B3   R6, ks_clr1, ks_cld, ks_cld
+ks_cld: LI   R4, 0
+        STW  [R0+KCC], R4
+        B    ks_drop
+ks_apk: LI   R5, 75
+        TCMP R6, R2, R5
+        B3   R6, ks_apm, ks_apK, ks_apm
+ks_apK: LDW  R3, [R0+KCC]
+        MOV  R4, R3
+ks_akm: LI   R5, 64
+        TCMP R6, R4, R5
+        B3   R6, ks_akd, ks_aks, ks_aks
+ks_aks: LI   R5, -64
+        ADD  R4, R4, R5
+        B    ks_akm
+ks_akd: NEG  R4, R4
+        ADD  R3, R3, R4
+        LI   R5, 64
+        ADD  R5, R3, R5
+        LDW  R4, [R0+KCC]
+        LDW  R3, [R0+KFB]
+        LI   R2, 0
+ks_akl: ADD  R6, R3, R4
+        STT  [R6], R2
+        LI   R6, 1536
+        ADD  R6, R4, R6
+        ADD  R6, R3, R6
+        STT  [R6], R2
+        LI   R6, 1
+        ADD  R4, R4, R6
+        TCMP R6, R4, R5
+        B3   R6, ksd_kl, ksd_dd, ksd_dd
+ksd_kl: B    ks_akl
+ksd_dd: B    ks_drop
+ks_apm: LI   R5, 109
+        TCMP R6, R2, R5
+        B3   R6, ksd_mm, ks_apM, ksd_mm
+ksd_mm: B    ks_drop
+ks_apM: LI   R5, 7
+        TCMP R6, R4, R5
+        B3   R6, ks_moff, ks_mon, ks_moff
+ks_mon: LI   R4, 1
+        STW  [R0+KINV], R4
+        B    ks_drop
+ks_moff: LI   R4, 0
+        STW  [R0+KINV], R4
+        B    ks_drop
+
+ks_sc1: LDW  R3, [R0+KFB]
+        LI   R4, 0
+        LI   R5, 1472
+ks_sc1a: LI   R6, 64
+        ADD  R6, R4, R6
+        ADD  R6, R3, R6
+        LDT  R2, [R6]
+        ADD  R6, R3, R4
+        STT  [R6], R2
+        LI   R6, 1600
+        ADD  R6, R4, R6
+        ADD  R6, R3, R6
+        LDT  R2, [R6]
+        LI   R6, 1536
+        ADD  R6, R4, R6
+        ADD  R6, R3, R6
+        STT  [R6], R2
+        LI   R6, 1
+        ADD  R4, R4, R6
+        TCMP R6, R4, R5
+        B3   R6, ks_sc1a, ks_sc1b, ks_sc1b
+ks_sc1b: LI   R2, 0
+        LI   R5, 1536
+ks_sc1c: ADD  R6, R3, R4
+        STT  [R6], R2
+        LI   R6, 1536
+        ADD  R6, R4, R6
+        ADD  R6, R3, R6
+        STT  [R6], R2
+        LI   R6, 1
+        ADD  R4, R4, R6
+        TCMP R6, R4, R5
+        B3   R6, ks_sc1c, ks_sc1d, ks_sc1d
+ks_sc1d: LI   R4, 1472
+        STW  [R0+KCC], R4
+        RET

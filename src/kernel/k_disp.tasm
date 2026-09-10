@@ -1,0 +1,22 @@
+sys_handler:
+        STW  [R0+KSV2], R2
+        STW  [R0+KSV3], R3
+        STW  [R0+KSV4], R4
+        STW  [R0+KSV5], R5
+        STW  [R0+KSV6], R6
+        STW  [R0+KSV8], R8
+        CSRR R8, 6
+        B3   R8, d_bad, d_ok1, d_ok1
+d_ok1:  LI   R4, -41
+        ADD  R4, R8, R4
+        B3   R4, d_ok2, d_ok2, d_bad
+d_ok2:  SH3L R4, R8, 1
+        LI   R5, KDISP
+        ADD  R4, R4, R5
+        LDW  R8, [R4]
+        RET
+d_bad:
+        LI   R1, msg_unk
+        CALL kputstr
+        HALT
+

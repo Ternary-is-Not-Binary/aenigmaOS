@@ -1,0 +1,1345 @@
+shell:
+        LI   R1, msg_sh0
+        SYS  10
+sh_loop:
+        LI   R1, msg_pr
+        SYS  10
+        LI   R4, shbuf
+        LI   R6, 0
+sh_rd:  SYS  2
+        B3   R1, t_neg, t_eof, sh_ch
+t_neg:  B    sh_neg
+t_eof:  B    sh_eof
+sh_neg: LI   R3, -32
+        TCMP R2, R1, R3
+        B3   R2, t_evt, t_non, t_evt
+t_non:  B    sh_none
+t_evt:  B    sh_rd
+sh_none: SYS 3
+        B    sh_rd
+sh_ch:  MOV  R5, R1
+        LI   R3, 127
+        TCMP R2, R5, R3
+        B3   R2, t_nb, t_bs, t_nb
+t_nb:   B    sh_nb
+t_bs:   B    sh_bs
+sh_nb:  LI   R3, 3
+        TCMP R2, R5, R3
+        B3   R2, t_nec, t_cc, t_nec
+t_nec:  B    sh_ech
+t_cc:   B    sh_cc
+sh_ech: SYS  0
+        LI   R3, 10
+        TCMP R2, R5, R3
+        B3   R2, sh_st, sh_eol, sh_st
+sh_st:  STT  [R4], R5
+        LI   R3, 1
+        ADD  R4, R4, R3
+        ADD  R6, R6, R3
+        LI   R3, 40
+        TCMP R2, R6, R3
+        B3   R2, t_rd, sh_eol, sh_eol
+t_rd:   B    sh_rd
+sh_eol:
+        LI   R3, 0
+        STT  [R4], R3
+        LI   R3, shbuf
+        LDT  R1, [R3]
+        LI   R3, 33
+        TCMP R2, R1, R3
+        B3   R2, t_loop, sh_d1, sh_d1
+t_loop: B    sh_loop
+sh_d1:  LI   R3, 104
+        TCMP R2, R1, R3
+        B3   R2, sh_d2, t_h, sh_d2
+sh_d2:  LI   R3, 108
+        TCMP R2, R1, R3
+        B3   R2, sh_d3, t_l, sh_d3
+sh_d3:  LI   R3, 99
+        TCMP R2, R1, R3
+        B3   R2, sh_d4, t_c, sh_d4
+sh_d4:  LI   R3, 120
+        TCMP R2, R1, R3
+        B3   R2, sh_d5, t_x, sh_d5
+sh_d5:  LI   R3, 117
+        TCMP R2, R1, R3
+        B3   R2, sh_d6, t_u, sh_d6
+sh_d6:  LI   R3, 100
+        TCMP R2, R1, R3
+        B3   R2, sh_d7, t_d, sh_d7
+sh_d7:  LI   R3, 114
+        TCMP R2, R1, R3
+        B3   R2, sh_d8, t_r, sh_d8
+sh_d8:  LI   R3, 110
+        TCMP R2, R1, R3
+        B3   R2, sh_d9, t_n, sh_d9
+sh_d9:  LI   R3, 97
+        TCMP R2, R1, R3
+        B3   R2, sh_d10, t_a, sh_d10
+sh_d10: LI   R3, 112
+        TCMP R2, R1, R3
+        B3   R2, sh_d11, t_p, sh_d11
+sh_d11: LI   R3, 116
+        TCMP R2, R1, R3
+        B3   R2, sh_bad, t_t, sh_bad
+t_h:    B    sh_h
+t_l:    B    sh_l
+t_c:    B    sh_c
+t_x:    B    sh_x
+t_u:    B    sh_u
+t_d:    B    sh_d
+t_r:    B    sh_r
+t_n:    B    sh_n
+t_a:    B    sh_a
+t_p:    B    pe_cmd
+t_t:    B    sh_t
+sh_bs:  B3   R6, t_nbs, t_nbs, t_wbs
+t_nbs:  B    sh_rd
+t_wbs:  B    sh_wbs
+sh_wbs: LI   R3, 1
+        TNOT R3, R3
+        ADD  R4, R4, R3
+        ADD  R6, R6, R3
+        LI   R1, 8
+        SYS  0
+        LI   R1, 32
+        SYS  0
+        LI   R1, 8
+        SYS  0
+        B    sh_rd
+sh_cc:  LI   R1, msg_cc
+        SYS  10
+        B    sh_loop
+sh_bad:
+        LI   R1, msg_bad
+        SYS  10
+        B    sh_loop
+sh_t:   LI   R1, -1
+        SYS  32
+        LI   R3, 3
+        TCMP R2, R1, R3
+        B3   R2, sht_on, sht_off, sht_on
+sht_on: LI   R1, 3
+        SYS  32
+        B3   R1, sht_err, sht_p1, sht_p1
+sht_off: LI  R1, 0
+        SYS  32
+        B3   R1, sht_err, sht_p0, sht_p0
+sht_p1: LI   R1, msg_pt1
+        SYS  10
+        B    sh_loop
+sht_p0: LI   R1, msg_pt0
+        SYS  10
+        B    sh_loop
+sht_err: LI  R1, msg_scf
+        SYS  10
+        B    sh_loop
+sh_h:
+        LI   R1, msg_hlp
+        SYS  10
+        B    sh_loop
+sh_l:
+        LI   R5, 0
+shl_n:  MOV  R1, R5
+        SYS  23
+        B3   R1, shl_bad, t_loop2, shl_ok
+t_loop2: B   sh_loop
+shl_ok: MOV  R5, R1
+        SYS  1
+        LI   R1, 32
+        SYS  0
+        MOV  R1, R5
+        SYS  21
+        MOV  R6, R1
+        LDT  R1, [R6-8]
+        SYS  1
+        LI   R1, 32
+        SYS  0
+        LDW  R1, [R6-3]
+        SYS  1
+        LI   R1, msg_snl
+        SYS  10
+        B    shl_n
+shl_bad:
+        LI   R1, msg_stb
+        SYS  10
+        B    sh_loop
+sh_c:
+        LI   R3, shbuf
+        LI   R6, 1
+        ADD  R3, R3, R6
+        LI   R1, 0
+shc_sp: LDT  R5, [R3]
+        LI   R6, 32
+        TCMP R2, R5, R6
+        B3   R2, shc_d, shc_adv, shc_d
+shc_adv:
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shc_sp
+shc_d:  LDT  R5, [R3]
+        LI   R6, 48
+        NEG  R2, R6
+        ADD  R2, R2, R5
+        B3   R2, shc_use, shc_r, shc_r
+shc_r:  LI   R6, 10
+        TCMP R4, R2, R6
+        B3   R4, shc_go, shc_use, shc_use
+shc_go: MUL  R1, R1, R6
+        ADD  R1, R1, R2
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shc_d
+shc_use:
+        SYS  21
+        B3   R1, shc_no, shc_no, shc_ok
+shc_no: LI   R1, msg_noid
+        SYS  10
+        B    sh_loop
+shc_ok: MOV  R6, R1
+        LI   R4, 200
+shc_l:  LDT  R1, [R6]
+        B3   R1, shc_dn, shc_dn, shc_pr
+shc_pr: SYS  0
+        LI   R3, 1
+        ADD  R6, R6, R3
+        LI   R3, -1
+        ADD  R4, R4, R3
+        B3   R4, shc_dn, shc_dn, shc_l
+shc_dn: LI   R1, msg_snl
+        SYS  10
+        B    sh_loop
+sh_d:
+        LI   R3, shbuf
+        LI   R6, 1
+        ADD  R3, R3, R6
+        LI   R1, 0
+shd_sp: LDT  R5, [R3]
+        LI   R6, 32
+        TCMP R2, R5, R6
+        B3   R2, shd_d, shd_adv, shd_d
+shd_adv:
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shd_sp
+shd_d:  LDT  R5, [R3]
+        LI   R6, 48
+        NEG  R2, R6
+        ADD  R2, R2, R5
+        B3   R2, shd_use, shd_r, shd_r
+shd_r:  LI   R6, 10
+        TCMP R4, R2, R6
+        B3   R4, shd_go, shd_use, shd_use
+shd_go: MUL  R1, R1, R6
+        ADD  R1, R1, R2
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shd_d
+shd_use:
+        B3   R1, shd_no, shd_no, shd_ok
+shd_no: LI   R1, msg_dno
+        SYS  10
+        B    sh_loop
+shd_ok: MOV  R6, R1
+        SYS  21
+        B3   R1, shd_no2, shd_no2, shd_free
+shd_no2:
+        LI   R1, msg_noid
+        SYS  10
+        B    sh_loop
+shd_free:
+        B    sh_d_old
+sh_n:
+        LI   R3, shbuf
+        LI   R6, 1
+        ADD  R3, R3, R6
+        LI   R1, 0
+shn_sp: LDT  R5, [R3]
+        LI   R6, 32
+        TCMP R2, R5, R6
+        B3   R2, shn_d, shn_adv, shn_d
+shn_adv:
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shn_sp
+shn_d:  LDT  R5, [R3]
+        LI   R6, 48
+        NEG  R2, R6
+        ADD  R2, R2, R5
+        B3   R2, shn_use, shn_r, shn_r
+shn_r:  LI   R6, 10
+        TCMP R4, R2, R6
+        B3   R4, shn_go, shn_use, shn_use
+shn_go: MUL  R1, R1, R6
+        ADD  R1, R1, R2
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shn_d
+shn_use:
+        B3   R1, shn_no, shn_no, shn_ok
+shn_no: LI   R1, msg_nno
+        SYS  10
+        B    sh_loop
+shn_ok: MOV  R6, R1
+        SYS  21
+        B3   R1, shn_no2, shn_no2, shn_have
+shn_no2:
+        LI   R1, msg_noid
+        SYS  10
+        B    sh_loop
+shn_have:
+        MOV  R4, R1
+shn_s2: LDT  R5, [R3]
+        LI   R1, 32
+        TCMP R2, R5, R1
+        B3   R2, shn_w0, shn_sadv, shn_w0
+shn_sadv:
+        LI   R1, 1
+        ADD  R3, R3, R1
+        B    shn_s2
+shn_w0: LI   R2, 0
+shn_wl: LDT  R5, [R3]
+        B3   R5, shn_term, shn_term, shn_ch
+shn_ch: LI   R1, 8
+        TCMP R1, R2, R1
+        B3   R1, shn_st, t_nfull, t_nfull
+t_nfull: B   shn_term
+shn_st: STT  [R4], R5
+        LI   R1, 1
+        ADD  R3, R3, R1
+        ADD  R4, R4, R1
+        ADD  R2, R2, R1
+        B    shn_wl
+shn_term:
+        LI   R1, 0
+        STT  [R4], R1
+        LI   R1, msg_nok
+        SYS  10
+        MOV  R1, R6
+        SYS  1
+        LI   R1, msg_snl
+        SYS  10
+        B    sh_loop
+sh_d_old:
+        MOV  R1, R6
+        SYS  22
+        LI   R1, msg_dok
+        SYS  10
+        MOV  R1, R6
+        SYS  1
+        LI   R1, msg_snl
+        SYS  10
+        B    sh_loop
+sh_r:
+        LI   R3, shbuf
+        LI   R6, 1
+        ADD  R3, R3, R6
+        LI   R1, 0
+shr_sp: LDT  R5, [R3]
+        LI   R6, 32
+        TCMP R2, R5, R6
+        B3   R2, shr_d, shr_adv, shr_d
+shr_adv:
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shr_sp
+shr_d:  LDT  R5, [R3]
+        LI   R6, 48
+        NEG  R2, R6
+        ADD  R2, R2, R5
+        B3   R2, shr_use, shr_r, shr_r
+shr_r:  LI   R6, 10
+        TCMP R4, R2, R6
+        B3   R4, shr_go, shr_use, shr_use
+shr_go: MUL  R1, R1, R6
+        ADD  R1, R1, R2
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shr_d
+shr_use:
+        B3   R1, shr_no, shr_no, shr_ok
+shr_no: LI   R1, msg_rno
+        SYS  10
+        B    sh_loop
+shr_ok: MOV  R6, R1
+        SYS  21
+        B3   R1, shr_no2, shr_no2, shr_have
+shr_no2:
+        LI   R1, msg_noid
+        SYS  10
+        B    sh_loop
+shr_have:
+        MOV  R3, R1
+        LDT  R2, [R3-8]
+        LI   R1, 5
+        TCMP R2, R2, R1
+        B3   R2, t_rtag, shr_tag, t_rtag
+t_rtag: B    shr_btag
+shr_tag:
+        LDW  R1, [R3-3]
+        ADD  R1, R1, R3
+        LI   R2, st_wl
+        STW  [R2], R1
+        LI   R2, 9
+        ADD  R3, R3, R2
+        LI   R2, st_tmpb
+        STW  [R2], R3
+        LI   R1, 18000
+        LI   R2, st_cur
+        STW  [R2], R1
+        LI   R2, st_k
+        STW  [R2], R0
+shr_cp:
+        LI   R3, st_tmpb
+        LDW  R3, [R3]
+        LI   R1, st_wl
+        LDW  R1, [R1]
+        TCMP R2, R3, R1
+        B3   R2, shr_cpgo, t_cpd2, t_cpd2
+t_cpd2: B    shr_spawn
+shr_cpgo:
+        LDW  R1, [R3]
+        LI   R2, 3
+        ADD  R3, R3, R2
+        LI   R2, st_tmpb
+        STW  [R2], R3
+        LI   R2, st_cur
+        LDW  R3, [R2]
+        STW  [R3], R1
+        LI   R2, 3
+        ADD  R3, R3, R2
+        LI   R2, st_cur
+        STW  [R2], R3
+        LI   R2, st_k
+        LDW  R1, [R2]
+        LI   R2, 1
+        ADD  R1, R1, R2
+        LI   R2, st_k
+        STW  [R2], R1
+        LI   R2, 41001
+        TCMP R2, R1, R2
+        B3   R2, t_rcp, t_rcap, t_rcap
+t_rcp:  B    shr_cp
+t_rcap: B    shr_bcap
+shr_spawn:
+        LI   R1, 9
+        LI   R2, 3000
+        SYS  20
+        B3   R1, t_rroom, t_rroom, shr_sp2
+t_rroom: B   shr_broom
+shr_sp2:
+        SYS  21
+        LI   R3, 3000
+        ADD  R3, R1, R3
+        LI   R1, 18000
+        LI   R2, 141000
+        SYS  14
+        MOV  R2, R3
+        LI   R1, 18000
+        SYS  7
+        B3   R1, t_rref, t_rref, shr_ok2
+t_rref: B    shr_bref
+shr_ok2:
+        MOV  R6, R1
+        LI   R1, msg_rok
+        SYS  10
+        MOV  R1, R6
+        SYS  1
+        LI   R1, msg_snl
+        SYS  10
+        MOV  R1, R6
+        SYS  41
+        B    sh_loop
+shr_btag:
+        LI   R1, msg_rtag
+        SYS  10
+        B    sh_loop
+shr_bcap:
+        LI   R1, msg_rcap
+        SYS  10
+        B    sh_loop
+shr_broom:
+        LI   R1, msg_rroom
+        SYS  10
+        B    sh_loop
+shr_bref:
+        LI   R1, msg_rref
+        SYS  10
+        B    sh_loop
+sh_a:
+        LI   R3, shbuf
+        LI   R6, 1
+        ADD  R3, R3, R6
+        LI   R1, 0
+sha_sp: LDT  R5, [R3]
+        LI   R6, 32
+        TCMP R2, R5, R6
+        B3   R2, sha_d, sha_adv, sha_d
+sha_adv:
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    sha_sp
+sha_d:  LDT  R5, [R3]
+        LI   R6, 48
+        NEG  R2, R6
+        ADD  R2, R2, R5
+        B3   R2, sha_use, sha_r, sha_r
+sha_r:  LI   R6, 10
+        TCMP R4, R2, R6
+        B3   R4, sha_go, sha_use, sha_use
+sha_go: MUL  R1, R1, R6
+        ADD  R1, R1, R2
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    sha_d
+sha_use:
+        B3   R1, sha_no, sha_no, sha_ok
+sha_no: LI   R1, msg_ano
+        SYS  10
+        B    sh_loop
+sha_ok: LI   R2, st_w
+        STW  [R2], R1
+sha_s2: LDT  R5, [R3]
+        LI   R1, 32
+        TCMP R2, R5, R1
+        B3   R2, sha_w0, sha_sadv, sha_w0
+sha_sadv:
+        LI   R1, 1
+        ADD  R3, R3, R1
+        B    sha_s2
+sha_w0: LI   R2, 0
+        LI   R4, st_nm
+sha_wl: LDT  R5, [R3]
+        B3   R5, sha_term, sha_term, sha_ch
+sha_ch: LI   R1, 8
+        TCMP R1, R2, R1
+        B3   R1, sha_st, sha_term, sha_term
+sha_st: STT  [R4], R5
+        LI   R1, 1
+        ADD  R3, R3, R1
+        ADD  R4, R4, R1
+        ADD  R2, R2, R1
+        B    sha_wl
+sha_term:
+        LI   R1, 0
+        STT  [R4], R1
+        LI   R1, st_w
+        LDW  R1, [R1]
+        SYS  21
+        B3   R1, sha_noid, sha_noid, sha_src
+sha_noid:
+        LI   R1, msg_noid
+        SYS  10
+        B    sh_loop
+sha_src:
+        LI   R2, 9
+        ADD  R1, R1, R2
+        LI   R2, st_o1
+        STW  [R2], R1
+        LI   R5, 0
+sha_en: MOV  R1, R5
+        SYS  23
+        B3   R1, t_asb, t_azf, sha_zo
+t_asb:  B    sha_stbad
+t_azf:  B    sha_znf
+sha_zo: MOV  R5, R1
+        SYS  21
+        B3   R1, t_asb, t_asb, sha_zg
+sha_zg: MOV  R6, R1
+        LDT  R1, [R6-8]
+        LI   R2, 5
+        TCMP R2, R1, R2
+        B3   R2, t_aen, sha_zc, t_aen
+t_aen:  B    sha_en
+sha_zc: LDT  R1, [R6]
+        LI   R2, 122
+        TCMP R2, R1, R2
+        B3   R2, t_aen, sha_c1, t_aen
+sha_c1: LDT  R1, [R6+1]
+        LI   R2, 97
+        TCMP R2, R1, R2
+        B3   R2, t_aen, sha_c2, t_aen
+sha_c2: LDT  R1, [R6+2]
+        LI   R2, 115
+        TCMP R2, R1, R2
+        B3   R2, t_aen, sha_c3, t_aen
+sha_c3: LDT  R1, [R6+3]
+        B3   R1, t_aen, sha_zf, t_aen
+sha_stbad:
+        LI   R1, msg_stb
+        SYS  10
+        B    sh_loop
+sha_znf:
+        LI   R1, msg_azas
+        SYS  10
+        B    sh_loop
+sha_zf:
+        LI   R1, 9
+        LI   R2, 123000
+        SYS  20
+        B3   R1, t_arom, t_arom, sha_t1
+t_arom: B    sha_room
+sha_t1: LI   R2, st_tid
+        STW  [R2], R1
+        SYS  21
+        LI   R2, 9
+        ADD  R1, R1, R2
+        LI   R2, st_o2
+        STW  [R2], R1
+        LDW  R1, [R6-3]
+        ADD  R1, R1, R6
+        LI   R2, st_wl
+        STW  [R2], R1
+        LI   R3, 9
+        ADD  R3, R3, R6
+        LI   R2, st_tmpb
+        STW  [R2], R3
+        LI   R1, 18000
+        LI   R2, st_cur
+        STW  [R2], R1
+        LI   R2, st_k
+        STW  [R2], R0
+sha_cp: LI   R3, st_tmpb
+        LDW  R3, [R3]
+        LI   R1, st_wl
+        LDW  R1, [R1]
+        TCMP R2, R3, R1
+        B3   R2, t_acg, t_acd, t_acd
+t_acg:  B    sha_cpg
+t_acd:  B    sha_cpd
+sha_cpg:
+        LDW  R1, [R3]
+        LI   R2, 3
+        ADD  R3, R3, R2
+        LI   R2, st_tmpb
+        STW  [R2], R3
+        LI   R2, st_cur
+        LDW  R3, [R2]
+        STW  [R3], R1
+        LI   R2, 3
+        ADD  R3, R3, R2
+        LI   R2, st_cur
+        STW  [R2], R3
+        LI   R2, st_k
+        LDW  R1, [R2]
+        LI   R2, 1
+        ADD  R1, R1, R2
+        LI   R2, st_k
+        STW  [R2], R1
+        LI   R2, 41001
+        TCMP R2, R1, R2
+        B3   R2, t_acp, t_acs, t_acs
+t_acp:  B    sha_cp
+t_acs:  B    sha_bcap
+sha_cpd:
+        LI   R2, st_o1
+        LDW  R1, [R2]
+        SYS  12
+        LI   R2, st_o2
+        LDW  R1, [R2]
+        SYS  13
+        LI   R1, 9
+        LI   R2, 3000
+        SYS  20
+        B3   R1, t_arf, t_arf, sha_spn
+t_arf:  B    sha_roomf
+sha_spn:
+        SYS  21
+        LI   R2, 3000
+        ADD  R2, R1, R2
+        MOV  R3, R2
+        LI   R1, 18000
+        LDW  R2, [R0+sh_zlim]
+        SYS  14
+        MOV  R2, R3
+        LI   R1, 18000
+        SYS  7
+        B3   R1, t_aref, t_aref, sha_pidok
+t_aref: B    sha_reff
+sha_pidok:
+        LI   R2, st_pid
+        STW  [R2], R1
+        LI   R1, 0
+        SYS  12
+        LI   R1, 0
+        SYS  13
+        LI   R2, st_pid
+        LDW  R1, [R2]
+        SYS  41
+        LI   R2, st_md
+        LI   R1, 1
+        STW  [R2], R1
+        LI   R2, st_zk
+        STW  [R2], R0
+        LI   R2, st_zl
+        STW  [R2], R0
+        CALL za_parse
+        LI   R2, st_zk
+        LDW  R1, [R2]
+        LI   R2, st_zl
+        LDW  R2, [R2]
+        NEG  R2, R2
+        ADD  R1, R1, R2
+        B3   R1, t_aem, t_aem, sha_cnt
+t_aem:  B    sha_emp
+sha_cnt:
+        LI   R3, 3
+        MUL  R3, R1, R3
+        LI   R2, 9
+        ADD  R2, R2, R3
+        LI   R1, 5
+        SYS  20
+        B3   R1, t_arf2, t_arf2, sha_new
+t_arf2: B    sha_roomf
+sha_new:
+        MOV  R6, R1
+        SYS  21
+        MOV  R4, R1
+        LI   R5, 0
+        STW  [R4], R5
+        LI   R2, 3
+        ADD  R4, R4, R2
+        STW  [R4], R5
+        ADD  R4, R4, R2
+        STW  [R4], R5
+        LI   R2, -6
+        ADD  R4, R4, R2
+        LI   R2, st_nm
+        LI   R5, 0
+        LI   R1, st_i
+        STW  [R1], R0
+sha_nl: LDT  R1, [R2]
+        STT  [R4], R1
+        B3   R1, sha_nnz, sha_np, sha_nnz
+sha_np: LI   R2, st_i
+sha_nnz:
+        LI   R1, 1
+        ADD  R2, R2, R1
+        ADD  R4, R4, R1
+        ADD  R5, R5, R1
+        LI   R1, 9
+        TCMP R3, R5, R1
+        B3   R3, t_anl, sha_nd, sha_nd
+t_anl:  B    sha_nl
+sha_nd:
+        MOV  R1, R6
+        SYS  21
+        LI   R2, 9
+        ADD  R1, R1, R2
+        LI   R2, st_c2
+        STW  [R2], R1
+        LI   R2, st_md
+        LI   R1, 2
+        STW  [R2], R1
+        LI   R2, st_zk
+        STW  [R2], R0
+        LI   R2, st_zl
+        LDW  R1, [R2]
+        LI   R2, st_zc
+        STW  [R2], R1
+        CALL za_parse
+        LI   R1, msg_aok
+        SYS  10
+        LI   R2, st_zk
+        LDW  R1, [R2]
+        SYS  1
+        LI   R1, msg_awid
+        SYS  10
+        MOV  R1, R6
+        SYS  1
+        LI   R1, msg_snl
+        SYS  10
+        LI   R2, st_tid
+        LDW  R1, [R2]
+        SYS  22
+        B    sh_loop
+sha_emp:
+        LI   R1, msg_aemp
+        SYS  10
+        LI   R2, st_o2
+        LDW  R1, [R2]
+        SYS  10
+sha_x1: LI   R2, st_tid
+        LDW  R1, [R2]
+        SYS  22
+        B    sh_loop
+sha_bcap:
+        LI   R1, msg_rcap
+        SYS  10
+        B    sha_x1
+sha_reff:
+        LI   R1, msg_rref
+        SYS  10
+        B    sha_x1
+sha_roomf:
+        LI   R2, st_tid
+        LDW  R1, [R2]
+        SYS  22
+sha_room:
+        LI   R1, msg_aroom
+        SYS  10
+        B    sh_loop
+
+za_parse:
+        LI   R2, st_o2
+        LDW  R1, [R2]
+        LI   R2, st_oc
+        STW  [R2], R1
+za_pl:  LI   R2, st_oc
+        LDW  R3, [R2]
+        LDT  R1, [R3]
+        B3   R1, za_ret, za_ret, za_c
+za_ret: RET
+za_c:   LI   R2, 10
+        TCMP R4, R1, R2
+        B3   R4, t_znn, za_adv, t_znn
+za_adv: LI   R2, 1
+        ADD  R3, R3, R2
+        LI   R2, st_oc
+        STW  [R2], R3
+        B    za_pl
+t_znn:  B    za_nn
+za_nn:  LI   R2, 35
+        TCMP R4, R1, R2
+        B3   R4, t_zw, za_cmt, t_zw
+za_cmt: LDT  R1, [R3]
+        B3   R1, za_ret, za_ret, za_ck
+za_ck:  LI   R2, 10
+        TCMP R4, R1, R2
+        B3   R4, za_cs, t_zad, za_cs
+za_cs:  LI   R2, 1
+        ADD  R3, R3, R2
+        B    za_cmt
+t_zad:  B    za_adv
+t_zw:   B    za_w
+za_w:   LI   R4, 18
+        LI   R5, 0
+za_wl:  LDT  R1, [R3]
+        LI   R2, 43
+        TCMP R2, R1, R2
+        B3   R2, t_zbad, za_wp, t_zwm
+za_wp:  LI   R1, 1
+        B    za_wacc
+t_zwm:  B    za_wm
+za_wm:  LI   R2, 45
+        TCMP R2, R1, R2
+        B3   R2, za_wz, za_wmn, za_wz
+za_wmn: LI   R1, -1
+        B    za_wacc
+za_wz:  LI   R2, 48
+        TCMP R2, R1, R2
+        B3   R2, t_zbad, za_wo2, t_zbad
+za_wo2: LI   R1, 0
+za_wacc:
+        LI   R2, 3
+        MUL  R5, R5, R2
+        ADD  R5, R5, R1
+        LI   R2, 1
+        ADD  R3, R3, R2
+        LI   R2, -1
+        ADD  R4, R4, R2
+        B3   R4, t_zwd, t_zwd, t_zwl
+t_zwd:  B    za_wd
+t_zwl:  B    za_wl
+t_zbad: B    za_bad
+za_wd:  LI   R2, st_oc
+        STW  [R2], R3
+        LI   R2, st_md
+        LDW  R1, [R2]
+        LI   R2, 1
+        TCMP R2, R1, R2
+        B3   R2, za_wr, za_zl, za_wr
+za_wr:  LI   R2, st_zc
+        LDW  R1, [R2]
+        B3   R1, za_ww, za_ww, za_zsk
+za_zsk: LI   R2, -1
+        ADD  R1, R1, R2
+        LI   R2, st_zc
+        STW  [R2], R1
+        B    za_pl
+za_ww:  LI   R2, st_c2
+        LDW  R1, [R2]
+        STW  [R1], R5
+        LI   R2, 3
+        ADD  R1, R1, R2
+        LI   R2, st_c2
+        STW  [R2], R1
+        B    za_k
+za_zl:  LI   R2, st_zl
+        LDW  R1, [R2]
+        LI   R2, st_zk
+        LDW  R2, [R2]
+        TCMP R4, R1, R2
+        B3   R4, za_k, t_zzc, za_k
+t_zzc:  B    za_zc
+za_zc:  B3   R5, za_k, za_zi, za_k
+za_zi:  LI   R2, st_zl
+        LDW  R1, [R2]
+        LI   R2, 1
+        ADD  R1, R1, R2
+        LI   R2, st_zl
+        STW  [R2], R1
+za_k:   LI   R2, st_zk
+        LDW  R1, [R2]
+        LI   R2, 1
+        ADD  R1, R1, R2
+        LI   R2, st_zk
+        STW  [R2], R1
+        LI   R2, 41001
+        TCMP R2, R1, R2
+        B3   R2, t_zpl, za_ov, za_ov
+t_zpl:  B    za_pl
+za_ov:  LI   R1, msg_aovf
+        SYS  10
+        B    sh_loop
+za_bad: LI   R1, msg_abad
+        SYS  10
+        LI   R2, st_o2
+        LDW  R1, [R2]
+        SYS  10
+        B    sh_loop
+
+sh_u:
+        LI   R3, shbuf
+        LI   R6, 1
+        ADD  R3, R3, R6
+        LI   R1, 0
+shu_sp: LDT  R5, [R3]
+        LI   R6, 32
+        TCMP R2, R5, R6
+        B3   R2, shu_d, shu_adv, shu_d
+shu_adv:
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shu_sp
+shu_d:  LDT  R5, [R3]
+        LI   R6, 48
+        NEG  R2, R6
+        ADD  R2, R2, R5
+        B3   R2, shu_use, shu_r, shu_r
+shu_r:  LI   R6, 10
+        TCMP R4, R2, R6
+        B3   R4, shu_go, shu_use, shu_use
+shu_go: MUL  R1, R1, R6
+        ADD  R1, R1, R2
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    shu_d
+shu_use:
+        B3   R1, shu_no, shu_no, shu_ok
+shu_no: LI   R1, msg_uno
+        SYS  10
+        B    sh_loop
+shu_ok: LI   R2, st_tag
+        STW  [R2], R1
+        LI   R1, msg_lh
+        SYS  10
+        LI   R1, 9
+        LI   R2, 123000
+        SYS  20
+        B3   R1, t_eroom, t_eroom, shu_tmp
+t_eroom: B   u_e_room
+shu_tmp:
+        LI   R2, st_tmp
+        STW  [R2], R1
+        SYS  21
+        LI   R2, st_tmpb
+        STW  [R2], R1
+        LI   R2, st_cur
+        STW  [R2], R1
+        LI   R2, st_k
+        STW  [R2], R0
+        LI   R2, st_ck
+        STW  [R2], R0
+        LI   R2, st_ckf
+        STW  [R2], R0
+u_rd:   LI   R3, shbuf
+u_rdc:  SYS  2
+        B3   R1, t_uneg, t_eeof, u_rg
+t_uneg: B    u_neg
+t_eeof: B    u_e_eof
+u_neg:  LI   R2, -32
+        TCMP R2, R1, R2
+        B3   R2, t_unx, t_urd, t_unx
+t_urd:  B    u_rdc
+t_unx:  B    u_e_eof
+u_rg:   LI   R2, 13
+        TCMP R2, R1, R2
+        B3   R2, u_r10, t_rskip, u_r10
+t_rskip: B   u_rdc
+u_r10:  LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, u_rstore, t_reol, u_rstore
+t_reol: B    u_reol
+u_rstore:
+        STT  [R3], R1
+        LI   R2, 1
+        ADD  R3, R3, R2
+        LI   R2, shcap
+        TCMP R2, R3, R2
+        B3   R2, t_rdc2, t_rdc2, u_eolong
+t_rdc2: B    u_rdc
+u_eolong: B  u_e_long
+u_reol:
+        LI   R2, 0
+        STT  [R3], R2
+        LI   R3, shbuf
+        LDT  R1, [R3]
+        LI   R2, 61
+        TCMP R2, R1, R2
+        B3   R2, u_scan, t_utend, u_scan
+t_utend: B   u_tend
+u_scan: LDT  R1, [R3]
+        B3   R1, t_usdn, t_usdn, u_sch
+t_usdn: B    u_sc_dn
+u_sch:  LI   R2, 43
+        TCMP R2, R1, R2
+        B3   R2, u_s0, t_sadv, u_s0
+t_sadv: B    u_sadv
+u_s0:   LI   R2, 48
+        TCMP R2, R1, R2
+        B3   R2, u_s1, t_sadv2, u_s1
+t_sadv2: B   u_sadv
+u_s1:   LI   R2, 45
+        TCMP R2, R1, R2
+        B3   R2, t_ebch, t_sadv3, t_ebch
+t_sadv3: B   u_sadv
+t_ebch: B    u_e_badch
+u_sadv: LI   R2, 1
+        ADD  R3, R3, R2
+        B    u_scan
+u_sc_dn:
+        LI   R1, shbuf
+        NEG  R1, R1
+        ADD  R1, R1, R3
+        LI   R2, 18
+        TCMP R2, R1, R2
+        B3   R2, u_len6, t_uw, u_len6
+t_uw:   B    u_word
+u_len6: LI   R2, 6
+        TCMP R2, R1, R2
+        B3   R2, t_ellen, t_uck, t_ellen
+t_uck:  B    u_clk
+t_ellen: B   u_e_len
+u_word:
+        LI   R1, st_k
+        LDW  R1, [R1]
+        LI   R2, 41000
+        TCMP R2, R1, R2
+        B3   R2, u_wset, t_ecap, u_wset
+t_ecap: B    u_e_cap
+u_wset:
+        LI   R1, 1
+        LI   R4, st_pmode
+        STW  [R4], R1
+        B    u_parse
+u_clk:
+        LI   R1, 2
+        LI   R4, st_pmode
+        STW  [R4], R1
+        B    u_parse
+u_parse:
+        LI   R4, st_w
+        STW  [R4], R0
+        LI   R4, st_wl
+        STW  [R4], R0
+        LI   R3, shbuf
+        LI   R4, st_ptr
+        STW  [R4], R3
+upa_loop:
+        LI   R3, st_ptr
+        LDW  R3, [R3]
+        LDT  R1, [R3]
+        B3   R1, t_upadn, t_upadn, upa_go
+t_upadn: B   upa_dn
+upa_go:
+        LI   R2, shb12
+        TCMP R2, R3, R2
+        B3   R2, upa_nwl, t_upaz, upa_nwl
+t_upaz: LI   R4, st_wl
+        STW  [R4], R0
+upa_nwl:
+        LI   R2, 48
+        TCMP R2, R1, R2
+        B3   R2, upa_m1, t_paz, upa_m1
+t_paz:  LI   R1, 0
+        B    upa_have
+upa_m1: LI   R2, 43
+        TCMP R2, R1, R2
+        B3   R2, t_pam, t_pap, t_pam
+t_pap:  LI   R1, 1
+        B    upa_have
+t_pam:  LI   R1, -1
+upa_have:
+        LI   R2, 1
+        ADD  R3, R3, R2
+        LI   R4, st_ptr
+        STW  [R4], R3
+        LI   R2, st_w
+        LDW  R2, [R2]
+        LI   R3, 3
+        MUL  R2, R2, R3
+        ADD  R2, R2, R1
+        LI   R4, st_w
+        STW  [R4], R2
+        LI   R2, st_wl
+        LDW  R2, [R2]
+        MUL  R2, R2, R3
+        ADD  R2, R2, R1
+        LI   R4, st_wl
+        STW  [R4], R2
+        B    upa_loop
+upa_dn:
+        LI   R1, st_pmode
+        LDW  R1, [R1]
+        LI   R2, 1
+        TCMP R2, R1, R2
+        B3   R2, t_upac, t_upaw, t_upac
+t_upaw: B    u_pw
+t_upac: B    u_pck
+u_pw:
+        LI   R1, st_w
+        LDW  R1, [R1]
+        LI   R3, st_cur
+        LDW  R3, [R3]
+        STW  [R3], R1
+        LI   R2, 3
+        ADD  R3, R3, R2
+        LI   R4, st_cur
+        STW  [R4], R3
+        LI   R1, st_k
+        LDW  R1, [R1]
+        LI   R2, 1
+        ADD  R1, R1, R2
+        LI   R4, st_k
+        STW  [R4], R1
+        LI   R3, st_wl
+        LDW  R3, [R3]
+        LI   R1, st_ck
+        LDW  R1, [R1]
+        ADD  R3, R3, R1
+        LI   R2, 364
+        TCMP R2, R3, R2
+        B3   R2, u_pwlo, u_pwlo, t_pwhi
+t_pwhi: LI   R2, 729
+        NEG  R2, R2
+        ADD  R3, R3, R2
+u_pwlo: LI   R2, -364
+        TCMP R2, R3, R2
+        B3   R2, t_pwad, t_pws, t_pws
+t_pwad: LI   R2, 729
+        ADD  R3, R3, R2
+t_pws:  LI   R4, st_ck
+        STW  [R4], R3
+        LI   R1, 46
+        SYS  0
+        B    u_rd
+u_pck:
+        LI   R1, st_w
+        LDW  R1, [R1]
+        LI   R3, st_ck
+        LDW  R3, [R3]
+        TCMP R2, R1, R3
+        B3   R2, t_eck, u_ckok, t_eck
+t_eck:  B    u_e_ck
+u_ckok:
+        LI   R1, 1
+        LI   R4, st_ckf
+        STW  [R4], R1
+        LI   R1, 10
+        SYS  0
+        B    u_rd
+u_tend:
+        LI   R1, st_ckf
+        LDW  R1, [R1]
+        B3   R1, t_enock, t_enock, u_alloc
+t_enock: B   u_e_nock
+u_alloc:
+        LI   R2, st_k
+        LDW  R2, [R2]
+        LI   R1, 3
+        MUL  R2, R2, R1
+        LI   R1, 9
+        ADD  R2, R2, R1
+        LI   R1, st_tag
+        LDW  R1, [R1]
+        SYS  20
+        B3   R1, t_erm2, t_erm2, u_objok
+t_erm2: B    u_e_room
+u_objok:
+        MOV  R6, R1
+        SYS  21
+        LI   R2, 0
+        STW  [R1], R2
+        LI   R2, 3
+        ADD  R1, R1, R2
+        LI   R2, 0
+        STW  [R1], R2
+        LI   R2, 3
+        ADD  R1, R1, R2
+        LI   R2, 0
+        STW  [R1], R2
+        LI   R2, 3
+        ADD  R1, R1, R2
+        LI   R2, st_cur
+        STW  [R2], R1
+        LI   R2, st_i
+        STW  [R2], R0
+u_cp:   LI   R1, st_i
+        LDW  R1, [R1]
+        LI   R2, st_k
+        LDW  R2, [R2]
+        TCMP R2, R1, R2
+        B3   R2, u_cpgo, t_cpd, t_cpd
+t_cpd:  B    u_done
+u_cpgo:
+        LI   R3, st_tmpb
+        LDW  R3, [R3]
+        LDW  R1, [R3]
+        LI   R2, 3
+        ADD  R3, R3, R2
+        LI   R4, st_tmpb
+        STW  [R4], R3
+        LI   R3, st_cur
+        LDW  R3, [R3]
+        STW  [R3], R1
+        LI   R2, 3
+        ADD  R3, R3, R2
+        LI   R4, st_cur
+        STW  [R4], R3
+        LI   R1, st_i
+        LDW  R1, [R1]
+        LI   R2, 1
+        ADD  R1, R1, R2
+        LI   R4, st_i
+        STW  [R4], R1
+        B    u_cp
+u_done:
+        LI   R1, st_tmp
+        LDW  R1, [R1]
+        SYS  22
+        LI   R1, msg_snl
+        SYS  10
+        LI   R1, msg_lok
+        SYS  10
+        LI   R1, st_k
+        LDW  R1, [R1]
+        SYS  1
+        LI   R1, msg_lok2
+        SYS  10
+        MOV  R1, R6
+        SYS  1
+        LI   R1, msg_snl
+        SYS  10
+        B    sh_loop
+u_fail:
+        SYS  10
+        LI   R1, st_tmp
+        LDW  R1, [R1]
+        B3   R1, t_fz, t_fz, u_ff
+u_ff:   SYS  22
+        LI   R2, st_tmp
+        STW  [R2], R0
+t_fz:   B    sh_loop
+u_e_eof:
+        LI   R1, msg_leof
+        B    u_fail
+u_e_long:
+        LI   R1, msg_llong
+        B    u_fail
+u_e_badch:
+        LI   R1, msg_lbad
+        B    u_fail
+u_e_len:
+        LI   R1, msg_llen
+        B    u_fail
+u_e_cap:
+        LI   R1, msg_lcap
+        B    u_fail
+u_e_ck:
+        LI   R1, msg_lck
+        B    u_fail
+u_e_nock:
+        LI   R1, msg_lnock
+        B    u_fail
+u_e_room:
+        LI   R1, msg_lroom
+        B    u_fail
+sh_eof:
+        LI   R1, msg_snl
+        SYS  10
+sh_x:
+        LI   R1, msg_bye
+        SYS  10
+        SYS  5
+st_tmp: .word 0
+st_tmpb: .word 0
+st_cur: .word 0
+st_k:   .word 0
+st_ck:  .word 0
+st_ckf: .word 0
+st_tag: .word 0
+st_w:   .word 0
+st_wl:  .word 0
+st_ptr: .word 0
+st_pmode: .word 0
+st_i:   .word 0
+st_pid: .word 0
+st_tid: .word 0
+st_o1:  .word 0
+st_o2:  .word 0
+st_oc:  .word 0
+st_md:  .word 0
+st_zk:  .word 0
+st_zl:  .word 0
+st_zc:  .word 0
+st_c2:  .word 0
+st_nm:  .word 0, 0, 0
+shbuf:  .word 0, 0, 0, 0
+shb12:  .word 0, 0, 0, 0
+        .word 0, 0, 0, 0
+        .word 0, 0
+shcap:  .word 0
+sh_zlim: .word 600210
+msg_sh0:  .tryte "aenigmaOS shell k10-PANEL - commands h l c u d r n a p t x\n\0"
+msg_pr:   .tryte "> \0"
+msg_cc:   .tryte "^C\n\0"
+msg_hlp:  .tryte "h l: list  c: cat  u: upload  d: del  r: run  n: rename  a: asm  p: edit  t: panel  x: exit\n\0"
+msg_bye:  .tryte "shell: exit\n\0"
+msg_bad:  .tryte "? (h for help)\n\0"
+msg_pt1:  .tryte "panel: text mode on (64x24)\n\0"
+msg_pt0:  .tryte "panel: pixel mode\n\0"
+msg_scf:  .tryte "panel: mode switch failed\n\0"
+msg_noid: .tryte "no such object id\n\0"
+msg_stb:  .tryte "store broken?!\n\0"
+msg_snl:  .tryte "\n\0"
+msg_ano:  .tryte "\na: need src id\n\0"
+msg_azas: .tryte "\na: no zas object upload and name it zas\n\0"
+msg_aroom: .tryte "\na: store full\n\0"
+msg_aok:  .tryte "\na: ok \0"
+msg_awid: .tryte " words id \0"
+msg_aemp: .tryte "\na: zas made no words dump:\n\0"
+msg_abad: .tryte "\na: zas output bad dump:\n\0"
+msg_aovf: .tryte "\na: output over 41000 words\n\0"
+msg_dno:  .tryte "usage: d <id>\n\0"
+msg_dok:  .tryte "id gone: \0"
+msg_uno:  .tryte "usage: u <tag>\n\0"
+msg_lh:   .tryte "lenta: paste words then ck then ===\n\0"
+msg_lroom: .tryte "lenta: store has no 123000t room - abort\n\0"
+msg_llong: .tryte "\nlenta: line too long - abort\n\0"
+msg_lbad: .tryte "\nlenta: bad char - want only + 0 -\n\0"
+msg_llen: .tryte "\nlenta: line not 18-word and not 6-ck\n\0"
+msg_lcap: .tryte "\nlenta: cap 41000 words - abort\n\0"
+msg_leof: .tryte "\nlenta: EOF in tape - abort\n\0"
+msg_lck:  .tryte "\nLENTA PORVALAS: ck mismatch - nothing created\n\0"
+msg_lnock: .tryte "\nlenta: got === before ck - abort\n\0"
+msg_lok:  .tryte "lenta sealed: \0"
+msg_lok2: .tryte " words id \0"
+msg_rno:  .tryte "usage: r <id>\n\0"
+msg_nno:  .tryte "usage: n <id> <name>\n\0"
+msg_nok:  .tryte "n: named id \0"
+msg_rtag: .tryte "r: object is not PROG tag5\n\0"
+msg_rcap: .tryte "r: prog over 41000 words\n\0"
+msg_rroom: .tryte "r: no room for stack\n\0"
+msg_rref: .tryte "r: spawn refused\n\0"
+msg_rok:  .tryte "r: spawned @18000 pid \0"

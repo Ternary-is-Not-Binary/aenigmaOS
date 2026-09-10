@@ -1,0 +1,2424 @@
+pe_cmd:
+        LI   R3, shbuf
+        LI   R6, 1
+        ADD  R3, R3, R6
+        LI   R1, 0
+        LI   R2, pe_hn
+        STW  [R2], R0
+pe_csp: LDT  R5, [R3]
+        LI   R6, 32
+        TCMP R2, R5, R6
+        B3   R2, pe_csd, pe_csa, pe_csd
+pe_csa:
+        LI   R6, 1
+        ADD  R3, R3, R6
+        B    pe_csp
+pe_csd: LDT  R5, [R3]
+        LI   R6, 48
+        NEG  R2, R6
+        ADD  R2, R2, R5
+        B3   R2, pe_cuse, pe_csr, pe_csr
+pe_csr: LI   R6, 10
+        TCMP R4, R2, R6
+        B3   R4, pe_csgo, pe_cuse, pe_cuse
+pe_csgo:
+        MUL  R1, R1, R6
+        ADD  R1, R1, R2
+        LI   R6, 1
+        ADD  R3, R3, R6
+        LI   R2, pe_hn
+        LDW  R4, [R2]
+        ADD  R4, R4, R6
+        STW  [R2], R4
+        B    pe_csd
+pe_cuse:
+        LI   R2, pe_hn
+        LDW  R4, [R2]
+        B3   R4, pe_chas, pe_cnew, pe_chas
+pe_cnew:
+        LI   R2, pe_id
+        STW  [R2], R0
+        LI   R2, pe_ann
+        STW  [R2], R0
+        LI   R2, pe_len
+        STW  [R2], R0
+        B    pe_cini
+pe_chas:
+        MOV  R6, R1
+        SYS  21
+        B3   R1, pe_cno, pe_cno, pe_cok
+pe_cno:
+        LI   R1, msg_noid
+        SYS  10
+        B    sh_loop
+pe_cok:
+        LI   R2, pe_arg
+        STW  [R2], R6
+        LDW  R3, [R1-3]
+        LI   R2, 9
+        ADD  R1, R1, R2
+        LI   R2, pe_t1
+        STW  [R2], R1
+        LI   R2, 2057
+        TCMP R4, R3, R2
+        B3   R4, pe_csz, pe_csz, pe_cbig
+pe_cbig:
+        LI   R1, pe_mbig
+        SYS  10
+        B    sh_loop
+pe_csz:
+        LI   R2, pe_ann
+        STW  [R2], R3
+        LI   R5, -9
+        ADD  R3, R3, R5
+        LI   R7, 0
+pe_cll:
+        TCMP R2, R7, R3
+        B3   R2, pe_clg, pe_cld, pe_cld
+pe_cld:
+        B    pe_clw
+pe_clg:
+        LI   R2, pe_t1
+        LDW  R5, [R2]
+        ADD  R5, R5, R7
+        LDT  R1, [R5]
+        B3   R1, pe_clc, pe_clw, pe_clc
+pe_clc:
+        LI   R5, pe_buf
+        ADD  R5, R5, R7
+        STT  [R5], R1
+        LI   R2, 1
+        ADD  R7, R7, R2
+        B    pe_cll
+pe_clw:
+        LI   R2, pe_len
+        STW  [R2], R7
+        LI   R2, pe_arg
+        LDW  R3, [R2]
+        LI   R2, pe_id
+        STW  [R2], R3
+pe_cini:
+        LI   R2, pe_cur
+        STW  [R2], R0
+        LI   R2, pe_top
+        STW  [R2], R0
+        LI   R2, pe_off
+        STW  [R2], R0
+        LI   R2, pe_dir
+        STW  [R2], R0
+        LI   R2, pe_ask
+        STW  [R2], R0
+        LI   R2, pe_note
+        STW  [R2], R0
+        LI   R2, pe_uok
+        STW  [R2], R0
+        LI   R2, pe_ulen
+        STW  [R2], R0
+        LI   R3, -1
+        LI   R2, pe_mark
+        STW  [R2], R3
+        LI   R2, pe_slo
+        STW  [R2], R3
+        LI   R2, pe_shi
+        STW  [R2], R3
+        LI   R1, -1
+        SYS  32
+        LI   R2, pe_m0
+        STW  [R2], R1
+        LI   R3, 3
+        TCMP R4, R1, R3
+        B3   R4, pe_pon, pe_cgo, pe_pon
+pe_pon: LI   R1, 3
+        SYS  32
+pe_cgo: CALL pe_clr
+        CALL pe_draw
+        B    pe_loop
+
+pe_loop:
+        SYS  2
+        B3   R1, pe_ln, pe_lx, pe_key
+pe_ln:
+        LI   R3, -32
+        TCMP R2, R1, R3
+        B3   R2, pe_key, pe_lno, pe_key
+pe_lno:
+        SYS  3
+        B    pe_loop
+pe_lx:
+        B    pe_xit
+pe_key:
+        LI   R2, pe_ask
+        LDW  R3, [R2]
+        B3   R3, pe_kd, pe_kd, pe_ka
+pe_ka:
+        B    pe_askk
+pe_kd:
+        B3   R1, pe_kng, pe_lpk1, pe_kpt
+pe_lpk1:
+        B    pe_loop
+pe_kpt:
+        B    pe_kps
+pe_kng:
+        LI   R3, -1
+        TCMP R2, R1, R3
+        B3   R2, pe_kn1, pe_kup, pe_kn1
+pe_kn1:
+        LI   R3, -2
+        TCMP R2, R1, R3
+        B3   R2, pe_kn2, pe_kdn, pe_kn2
+pe_kn2:
+        LI   R3, -3
+        TCMP R2, R1, R3
+        B3   R2, pe_kn3, pe_krt, pe_kn3
+pe_kn3:
+        LI   R3, -4
+        TCMP R2, R1, R3
+        B3   R2, pe_kn4, pe_klf, pe_kn4
+pe_kn4:
+        LI   R3, -5
+        TCMP R2, R1, R3
+        B3   R2, pe_kn5, pe_thm, pe_kn5
+pe_kn5:
+        LI   R3, -6
+        TCMP R2, R1, R3
+        B3   R2, pe_kn6, pe_ten, pe_kn6
+pe_kn6:
+        LI   R3, -7
+        TCMP R2, R1, R3
+        B3   R2, pe_kn7, pe_tpu, pe_kn7
+pe_kn7:
+        LI   R3, -8
+        TCMP R2, R1, R3
+        B3   R2, pe_kn8, pe_tpd, pe_kn8
+pe_kn8:
+        LI   R3, -10
+        TCMP R2, R1, R3
+        B3   R2, pe_lpk2, pe_tdl, pe_lpk2
+pe_lpk2:
+        B    pe_loop
+pe_thm: B    pe_khm
+pe_ten: B    pe_ken
+pe_tpu: B    pe_kpu
+pe_tpd: B    pe_kpd
+pe_tdl: B    pe_kdl
+pe_kup:
+        CALL pe_up
+        B    pe_nav
+pe_kdn:
+        CALL pe_dn
+        B    pe_nav
+pe_krt:
+        LI   R2, pe_cur
+        LDW  R3, [R2]
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        TCMP R2, R3, R4
+        B3   R2, pe_krg, pe_krx, pe_krx
+pe_krx:
+        B    pe_nav
+pe_krg:
+        LI   R4, 1
+        ADD  R3, R3, R4
+        LI   R2, pe_cur
+        STW  [R2], R3
+        B    pe_nav
+pe_klf:
+        LI   R2, pe_cur
+        LDW  R3, [R2]
+        B3   R3, pe_klg, pe_klx, pe_klg
+pe_klx:
+        B    pe_nav
+pe_klg:
+        LI   R4, -1
+        ADD  R3, R3, R4
+        LI   R2, pe_cur
+        STW  [R2], R3
+        B    pe_nav
+pe_khm:
+        CALL pe_hm
+        B    pe_nav
+pe_ken:
+        CALL pe_en
+        B    pe_nav
+pe_kpu:
+        CALL pe_pgup
+        B    pe_nav
+pe_kpd:
+        CALL pe_pgdn
+        B    pe_nav
+pe_kdl:
+        LI   R2, pe_mark
+        LDW  R3, [R2]
+        B3   R3, pe_kdll, pe_kdlr, pe_kdlr
+pe_kdll:
+        CALL pe_dr
+        B    pe_ed
+pe_kdlr:
+        CALL pe_delr
+        B3   R1, pe_kdz, pe_kdz, pe_kde
+pe_kdz: B    pe_red
+pe_kde: B    pe_ed
+pe_kps:
+        LI   R3, 10
+        TCMP R2, R1, R3
+        B3   R2, pe_kp1, pe_klj, pe_kp1
+pe_kp1:
+        LI   R3, 19
+        TCMP R2, R1, R3
+        B3   R2, pe_kp2, pe_tsv, pe_kp2
+pe_kp2:
+        LI   R3, 17
+        TCMP R2, R1, R3
+        B3   R2, pe_kp2a, pe_tqx, pe_kp2a
+pe_kp2a:
+        LI   R3, 24
+        TCMP R2, R1, R3
+        B3   R2, pe_kp2b, pe_tct, pe_kp2b
+pe_kp2b:
+        LI   R3, 3
+        TCMP R2, R1, R3
+        B3   R2, pe_kp2c, pe_tcp, pe_kp2c
+pe_kp2c:
+        LI   R3, 22
+        TCMP R2, R1, R3
+        B3   R2, pe_kp2d, pe_tpt, pe_kp2d
+pe_kp2d:
+        LI   R3, 26
+        TCMP R2, R1, R3
+        B3   R2, pe_kp2e, pe_tun, pe_kp2e
+pe_kp2e:
+        LI   R3, 25
+        TCMP R2, R1, R3
+        B3   R2, pe_kp2g, pe_tre, pe_kp2g
+pe_kp2g:
+        LI   R3, 30
+        TCMP R2, R1, R3
+        B3   R2, pe_kp3, pe_kmj, pe_kp3
+pe_klj: B    pe_klf2
+pe_tsv: B    pe_ksv
+pe_tqx: B    pe_kqx
+pe_tct: B    pe_kcut
+pe_tcp: B    pe_kcpy
+pe_tpt: B    pe_kpst
+pe_tun: B    pe_kund
+pe_tre: B    pe_kred
+pe_kmj: B    pe_kmrk
+pe_tbs: B    pe_kbs
+pe_kp3:
+        LI   R3, 32
+        TCMP R2, R1, R3
+        B3   R2, pe_kpx, pe_kin, pe_kp4
+pe_kpx:
+        B    pe_loop
+pe_kp4:
+        LI   R3, 127
+        TCMP R2, R1, R3
+        B3   R2, pe_kin, pe_tbs, pe_kin
+pe_klf2:
+        LI   R1, 10
+pe_kin:
+        CALL pe_in
+        LI   R2, pe_t1
+        LDW  R3, [R2]
+        B3   R3, pe_red, pe_red, pe_ed
+pe_kbs:
+        LI   R2, pe_mark
+        LDW  R3, [R2]
+        B3   R3, pe_kbl, pe_kbr, pe_kbr
+pe_kbl: CALL pe_bl
+        B    pe_ed
+pe_kbr: CALL pe_delr
+        B3   R1, pe_kbz, pe_kbz, pe_kbe
+pe_kbz: B    pe_red
+pe_kbe: B    pe_ed
+pe_ksv:
+        CALL pe_save
+        B    pe_red
+pe_kqx:
+        B    pe_lqx
+pe_kcut:
+        LI   R2, pe_mark
+        LDW  R3, [R2]
+        B3   R3, pe_kcl, pe_kcr, pe_kcr
+pe_kcl: CALL pe_cutl
+        B3   R1, pe_kcz, pe_kcz, pe_kce
+pe_kcr: CALL pe_cutsel
+        B3   R1, pe_kcz, pe_kcz, pe_kce
+pe_kcz: B    pe_red
+pe_kce: B    pe_ed
+pe_kcpy:
+        LI   R2, pe_mark
+        LDW  R3, [R2]
+        B3   R3, pe_kyl, pe_kyr, pe_kyr
+pe_kyl: CALL pe_copy
+        B    pe_red
+pe_kyr: CALL pe_copyr
+        B    pe_red
+pe_kpst:
+        CALL pe_pst
+        B3   R1, pe_kpz, pe_kpz, pe_kpe
+pe_kpz: B    pe_red
+pe_kpe: B    pe_ed
+pe_kund:
+        CALL pe_uapp
+        B    pe_red
+pe_kred:
+        CALL pe_uapp
+        B    pe_red
+pe_ed:
+        LI   R2, 1
+        LI   R3, pe_dir
+        STW  [R3], R2
+pe_nav:
+        CALL pe_fixtop
+        B    pe_red
+pe_red:
+        CALL pe_draw
+        B    pe_loop
+pe_lqx:
+        LI   R2, pe_dir
+        LDW  R3, [R2]
+        B3   R3, pe_xit, pe_xit, pe_lq2
+pe_lq2:
+        LI   R2, 1
+        LI   R3, pe_ask
+        STW  [R3], R2
+        B    pe_red
+pe_xit:
+        CALL pe_clr
+        B    pe_rst
+pe_rst: LI   R2, pe_m0
+        LDW  R1, [R2]
+        LI   R3, 3
+        TCMP R4, R1, R3
+        B3   R4, pe_rgo, pe_out, pe_rgo
+pe_rgo: SYS  32
+pe_out: B    sh_loop
+
+pe_askk:
+        B3   R1, pe_askn, pe_askn, pe_akp
+pe_askn:
+        B    pe_loop
+pe_akp:
+        LI   R3, 121
+        TCMP R2, R1, R3
+        B3   R2, pe_ak1, pe_aky, pe_ak1
+pe_ak1:
+        LI   R3, 110
+        TCMP R2, R1, R3
+        B3   R2, pe_ak2, pe_akn, pe_ak2
+pe_ak2:
+        LI   R3, 27
+        TCMP R2, R1, R3
+        B3   R2, pe_akx, pe_ake, pe_akx
+pe_akx:
+        B    pe_loop
+pe_ake:
+        LI   R2, pe_ask
+        STW  [R2], R0
+        B    pe_red
+pe_aky:
+        CALL pe_save
+        LI   R2, pe_note
+        LDW  R3, [R2]
+        LI   R4, 2
+        TCMP R5, R3, R4
+        B3   R5, pe_aksv, pe_akf, pe_aksv
+pe_aksv:
+        CALL pe_clr
+        LI   R1, pe_s3
+        SYS  10
+        LI   R2, pe_id
+        LDW  R1, [R2]
+        SYS  1
+        B    pe_rst
+pe_akf:
+        LI   R2, pe_ask
+        STW  [R2], R0
+        B    pe_red
+pe_akn:
+        B    pe_xit
+
+pe_up:
+        LI   R2, pe_ra
+        STW  [R2], R8
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        CALL pe_ls
+        B3   R5, pe_upg, pe_upq, pe_upg
+pe_upg:
+        LI   R2, pe_cur
+        LDW  R3, [R2]
+        NEG  R6, R5
+        ADD  R6, R6, R3
+        LI   R3, -1
+        ADD  R4, R5, R3
+        CALL pe_ls
+        NEG  R7, R5
+        ADD  R7, R7, R4
+        TCMP R2, R6, R7
+        B3   R2, pe_upc, pe_upc, pe_upl
+pe_upc:
+        ADD  R5, R5, R6
+        B    pe_ups
+pe_upl:
+        ADD  R5, R5, R7
+pe_ups:
+        LI   R2, pe_cur
+        STW  [R2], R5
+pe_upq:
+        LI   R2, pe_ra
+        LDW  R8, [R2]
+        RET
+
+pe_dn:
+        LI   R2, pe_ra
+        STW  [R2], R8
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        CALL pe_le
+        LI   R2, pe_len
+        LDW  R3, [R2]
+        TCMP R2, R5, R3
+        B3   R2, pe_dng, pe_dnq, pe_dnq
+pe_dng:
+        MOV  R7, R5
+        CALL pe_ls
+        NEG  R3, R5
+        ADD  R3, R3, R4
+        LI   R2, pe_t1
+        STW  [R2], R3
+        LI   R3, 1
+        ADD  R4, R7, R3
+        MOV  R7, R4
+        CALL pe_le
+        NEG  R3, R7
+        ADD  R3, R3, R5
+        LI   R2, pe_t1
+        LDW  R6, [R2]
+        TCMP R2, R6, R3
+        B3   R2, pe_dnc, pe_dnc, pe_dnl
+pe_dnc:
+        ADD  R7, R7, R6
+        B    pe_dns
+pe_dnl:
+        ADD  R7, R7, R3
+pe_dns:
+        LI   R2, pe_cur
+        STW  [R2], R7
+pe_dnq:
+        LI   R2, pe_ra
+        LDW  R8, [R2]
+        RET
+
+pe_hm:
+        LI   R2, pe_ra
+        STW  [R2], R8
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        CALL pe_ls
+        LI   R2, pe_cur
+        STW  [R2], R5
+        LI   R2, pe_ra
+        LDW  R8, [R2]
+        RET
+
+pe_en:
+        LI   R2, pe_ra
+        STW  [R2], R8
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        CALL pe_le
+        LI   R2, pe_cur
+        STW  [R2], R5
+        LI   R2, pe_ra
+        LDW  R8, [R2]
+        RET
+
+pe_pgup:
+        LI   R2, pe_rb
+        STW  [R2], R8
+        LI   R3, 19
+        LI   R2, pe_k
+        STW  [R2], R3
+pe_pgul:
+        CALL pe_up
+        LI   R2, pe_k
+        LDW  R3, [R2]
+        LI   R4, -1
+        ADD  R3, R3, R4
+        STW  [R2], R3
+        B3   R3, pe_pguq, pe_pguq, pe_pgul
+pe_pguq:
+        LI   R2, pe_rb
+        LDW  R8, [R2]
+        RET
+
+pe_pgdn:
+        LI   R2, pe_rb
+        STW  [R2], R8
+        LI   R3, 19
+        LI   R2, pe_k
+        STW  [R2], R3
+pe_pgdl:
+        CALL pe_dn
+        LI   R2, pe_k
+        LDW  R3, [R2]
+        LI   R4, -1
+        ADD  R3, R3, R4
+        STW  [R2], R3
+        B3   R3, pe_pgdq, pe_pgdq, pe_pgdl
+pe_pgdq:
+        LI   R2, pe_rb
+        LDW  R8, [R2]
+        RET
+
+pe_fixtop:
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        LI   R2, pe_top
+        LDW  R5, [R2]
+        TCMP R2, R4, R5
+        B3   R2, pe_ftu, pe_ftc, pe_ftc
+pe_ftu:
+        MOV  R5, R4
+pe_ftul:
+        B3   R5, pe_ftuz, pe_ftuz, pe_ftus
+pe_ftuz:
+        LI   R5, 0
+        B    pe_ftw
+pe_ftus:
+        LI   R3, pe_buf
+        ADD  R3, R3, R5
+        LDT  R1, [R3-1]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_ftud, pe_ftuf, pe_ftud
+pe_ftuf:
+        B    pe_ftw
+pe_ftud:
+        LI   R2, -1
+        ADD  R5, R5, R2
+        B    pe_ftul
+pe_ftc:
+        LI   R6, 0
+        MOV  R3, R5
+pe_ftcl:
+        TCMP R2, R3, R4
+        B3   R2, pe_ftcc, pe_ftcd, pe_ftcd
+pe_ftcd:
+        B    pe_ftsc
+pe_ftcc:
+        LI   R2, pe_buf
+        ADD  R2, R2, R3
+        LDT  R1, [R2]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_ftcn, pe_ftcy, pe_ftcn
+pe_ftcy:
+        LI   R2, 1
+        ADD  R6, R6, R2
+pe_ftcn:
+        LI   R2, 1
+        ADD  R3, R3, R2
+        B    pe_ftcl
+pe_ftsc:
+        LI   R2, -19
+        ADD  R2, R6, R2
+        B3   R2, pe_ftw, pe_fta, pe_fta
+pe_fta:
+        LI   R3, pe_buf
+        ADD  R3, R3, R5
+        LDT  R1, [R3]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_ftan, pe_ftay, pe_ftan
+pe_ftay:
+        LI   R2, 1
+        ADD  R5, R5, R2
+        LI   R2, -1
+        ADD  R6, R6, R2
+        B    pe_ftsc
+pe_ftan:
+        LI   R2, 1
+        ADD  R5, R5, R2
+        B    pe_fta
+pe_ftw:
+        LI   R2, pe_top
+        STW  [R2], R5
+        RET
+
+pe_in:
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        LI   R3, 2080
+        TCMP R5, R4, R3
+        B3   R5, pe_ino, pe_inf, pe_inf
+pe_inf:
+        LI   R2, pe_t1
+        STW  [R2], R0
+        LI   R2, 3
+        LI   R3, pe_note
+        STW  [R3], R2
+        RET
+pe_ino:
+        LI   R2, pe_us8
+        STW  [R2], R8
+        CALL pe_snap
+        LI   R2, pe_us8
+        LDW  R8, [R2]
+        LI   R2, pe_cur
+        LDW  R5, [R2]
+        MOV  R6, R4
+pe_inl:
+        TCMP R3, R6, R5
+        B3   R3, pe_inw, pe_inw, pe_inm
+pe_inm:
+        LI   R3, pe_buf
+        ADD  R3, R3, R6
+        LDT  R7, [R3-1]
+        STT  [R3], R7
+        LI   R3, -1
+        ADD  R6, R6, R3
+        B    pe_inl
+pe_inw:
+        LI   R3, pe_buf
+        ADD  R3, R3, R5
+        STT  [R3], R1
+        LI   R2, pe_mark
+        LDW  R6, [R2]
+        B3   R6, pe_inn, pe_inn, pe_inm2
+pe_inm2:
+        LI   R3, 1
+        NEG  R7, R5
+        ADD  R7, R7, R6
+        B3   R7, pe_inn, pe_inn, pe_inmb
+pe_inmb:
+        ADD  R6, R6, R3
+        LI   R2, pe_mark
+        STW  [R2], R6
+pe_inn:
+        LI   R3, 1
+        ADD  R5, R5, R3
+        LI   R2, pe_cur
+        STW  [R2], R5
+        ADD  R4, R4, R3
+        LI   R2, pe_len
+        STW  [R2], R4
+        LI   R2, pe_t1
+        STW  [R2], R3
+        RET
+
+pe_bl:
+        LI   R2, pe_cur
+        LDW  R5, [R2]
+        B3   R5, pe_blg, pe_blr, pe_blg
+pe_blr:
+        RET
+pe_blg:
+        LI   R2, pe_us8
+        STW  [R2], R8
+        CALL pe_snap
+        LI   R2, pe_us8
+        LDW  R8, [R2]
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        LI   R3, -1
+        ADD  R6, R5, R3
+        ADD  R7, R4, R3
+pe_bll:
+        TCMP R3, R6, R7
+        B3   R3, pe_blc, pe_bld, pe_bld
+pe_blc:
+        LI   R3, pe_buf
+        ADD  R3, R3, R6
+        LDT  R1, [R3+1]
+        STT  [R3], R1
+        LI   R3, 1
+        ADD  R6, R6, R3
+        B    pe_bll
+pe_bld:
+        LI   R3, -1
+        ADD  R5, R5, R3
+        LI   R2, pe_cur
+        STW  [R2], R5
+        LI   R2, pe_len
+        STW  [R2], R7
+        RET
+
+pe_dr:
+        LI   R2, pe_cur
+        LDW  R5, [R2]
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        TCMP R3, R5, R4
+        B3   R3, pe_drg, pe_drr, pe_drr
+pe_drr:
+        RET
+pe_drg:
+        LI   R2, pe_us8
+        STW  [R2], R8
+        CALL pe_snap
+        LI   R2, pe_us8
+        LDW  R8, [R2]
+        MOV  R6, R5
+        LI   R3, -1
+        ADD  R7, R4, R3
+pe_drl:
+        TCMP R3, R6, R7
+        B3   R3, pe_drc, pe_drd, pe_drd
+pe_drc:
+        LI   R3, pe_buf
+        ADD  R3, R3, R6
+        LDT  R1, [R3+1]
+        STT  [R3], R1
+        LI   R3, 1
+        ADD  R6, R6, R3
+        B    pe_drl
+pe_drd:
+        LI   R2, pe_len
+        STW  [R2], R7
+        RET
+
+pe_ls:
+        MOV  R5, R4
+pe_lsl:
+        B3   R5, pe_lsz, pe_lsz, pe_lss
+pe_lsz:
+        LI   R5, 0
+        RET
+pe_lss:
+        LI   R3, pe_buf
+        ADD  R3, R3, R5
+        LDT  R1, [R3-1]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_lsd, pe_lsf, pe_lsd
+pe_lsf:
+        RET
+pe_lsd:
+        LI   R2, -1
+        ADD  R5, R5, R2
+        B    pe_lsl
+
+pe_le:
+        MOV  R5, R4
+        LI   R2, pe_len
+        LDW  R6, [R2]
+pe_lel:
+        TCMP R2, R5, R6
+        B3   R2, pe_lec, pe_lez, pe_lez
+pe_lez:
+        MOV  R5, R6
+        RET
+pe_lec:
+        LI   R3, pe_buf
+        ADD  R3, R3, R5
+        LDT  R1, [R3]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_lenx, pe_lef, pe_lenx
+pe_lef:
+        RET
+pe_lenx:
+        LI   R2, 1
+        ADD  R5, R5, R2
+        B    pe_lel
+
+pe_fcl:
+        LI   R2, pe_t1
+        LDW  R3, [R2]
+        LI   R2, pe_t2
+        LDW  R4, [R2]
+        LI   R5, 0
+pe_fcll:
+        ADD  R6, R3, R5
+        TCMP R2, R6, R4
+        B3   R2, pe_fclm, pe_fcld, pe_fcld
+pe_fclm:
+        LI   R2, pe_buf
+        ADD  R2, R2, R6
+        LDT  R1, [R2]
+        LI   R2, pe_clip
+        ADD  R2, R2, R5
+        STT  [R2], R1
+        LI   R2, 1
+        ADD  R5, R5, R2
+        B    pe_fcll
+pe_fcld:
+        LI   R2, pe_clen
+        STW  [R2], R5
+        RET
+
+pe_cutl:
+        LI   R2, pe_cp8
+        STW  [R2], R8
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        B3   R4, pe_cutg, pe_cut0, pe_cutg
+pe_cut0:
+        LI   R1, 0
+        B    pe_cutr
+pe_cutg:
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        CALL pe_ls
+        LI   R2, pe_t1
+        STW  [R2], R5
+        CALL pe_le
+        LI   R2, pe_len
+        LDW  R6, [R2]
+        TCMP R2, R5, R6
+        B3   R2, pe_cuti, pe_cuts, pe_cuts
+pe_cuti:
+        LI   R3, 1
+        ADD  R5, R5, R3
+pe_cuts:
+        LI   R2, pe_t2
+        STW  [R2], R5
+        CALL pe_fcl
+        LI   R2, pe_clen
+        LDW  R6, [R2]
+        B3   R6, pe_cutm, pe_cut0, pe_cutm
+pe_cutm:
+        CALL pe_snap
+        LI   R2, pe_clen
+        LDW  R6, [R2]
+        LI   R2, pe_t1
+        LDW  R3, [R2]
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        NEG  R7, R6
+        ADD  R7, R7, R4
+pe_cutmv:
+        TCMP R2, R3, R7
+        B3   R2, pe_cutmm, pe_cutmd, pe_cutmd
+pe_cutmm:
+        ADD  R1, R3, R6
+        LI   R2, pe_buf
+        ADD  R5, R2, R3
+        ADD  R2, R2, R1
+        LDT  R1, [R2]
+        STT  [R5], R1
+        LI   R2, 1
+        ADD  R3, R3, R2
+        B    pe_cutmv
+pe_cutmd:
+        LI   R2, pe_len
+        STW  [R2], R7
+        LI   R2, pe_t1
+        LDW  R3, [R2]
+        LI   R2, pe_cur
+        STW  [R2], R3
+        LI   R1, 1
+pe_cutr:
+        LI   R2, pe_cp8
+        LDW  R8, [R2]
+        RET
+
+pe_copy:
+        LI   R2, pe_cp8
+        STW  [R2], R8
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        B3   R4, pe_cpyg, pe_cpy0, pe_cpyg
+pe_cpy0:
+        LI   R2, pe_clen
+        STW  [R2], R0
+        B    pe_cpyr
+pe_cpyg:
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        CALL pe_ls
+        LI   R2, pe_t1
+        STW  [R2], R5
+        CALL pe_le
+        LI   R2, pe_len
+        LDW  R6, [R2]
+        TCMP R2, R5, R6
+        B3   R2, pe_cpyi, pe_cpys, pe_cpys
+pe_cpyi:
+        LI   R3, 1
+        ADD  R5, R5, R3
+pe_cpys:
+        LI   R2, pe_t2
+        STW  [R2], R5
+        CALL pe_fcl
+pe_cpyr:
+        LI   R2, pe_cp8
+        LDW  R8, [R2]
+        RET
+
+pe_pst:
+        LI   R3, -1
+        LI   R2, pe_mark
+        STW  [R2], R3
+        LI   R2, pe_clen
+        LDW  R4, [R2]
+        B3   R4, pe_pstg, pe_pst0, pe_pstg
+pe_pst0:
+        LI   R1, 0
+        RET
+pe_pstg:
+        LI   R2, pe_len
+        LDW  R5, [R2]
+        ADD  R6, R5, R4
+        LI   R3, 2080
+        TCMP R2, R6, R3
+        B3   R2, pe_psto, pe_pstj, pe_pstj
+pe_pstj: B   pe_pstf
+pe_psto:
+        LI   R2, pe_us8
+        STW  [R2], R8
+        CALL pe_snap
+        LI   R2, pe_us8
+        LDW  R8, [R2]
+        LI   R2, pe_clen
+        LDW  R4, [R2]
+        LI   R2, pe_len
+        LDW  R5, [R2]
+        ADD  R6, R5, R4
+        LI   R2, pe_cur
+        LDW  R7, [R2]
+        MOV  R3, R5
+pe_pstsh:
+        TCMP R2, R7, R3
+        B3   R2, pe_psts2, pe_pstsd, pe_pstsd
+pe_psts2:
+        LI   R2, pe_buf
+        ADD  R5, R2, R3
+        LDT  R1, [R5-1]
+        ADD  R5, R5, R4
+        STT  [R5-1], R1
+        LI   R2, -1
+        ADD  R3, R3, R2
+        B    pe_pstsh
+pe_pstsd:
+        LI   R5, 0
+pe_pstcp:
+        TCMP R2, R5, R4
+        B3   R2, pe_pstcm, pe_pstcd, pe_pstcd
+pe_pstcm:
+        LI   R2, pe_clip
+        ADD  R2, R2, R5
+        LDT  R1, [R2]
+        LI   R2, pe_buf
+        ADD  R2, R2, R7
+        ADD  R2, R2, R5
+        STT  [R2], R1
+        LI   R2, 1
+        ADD  R5, R5, R2
+        B    pe_pstcp
+pe_pstcd:
+        ADD  R7, R7, R4
+        LI   R2, pe_cur
+        STW  [R2], R7
+        LI   R2, pe_len
+        STW  [R2], R6
+        LI   R1, 1
+        RET
+pe_pstf:
+        LI   R2, 3
+        LI   R3, pe_note
+        STW  [R3], R2
+        LI   R1, 0
+        RET
+
+pe_ech:
+        LI   R3, pe_fp
+        LDW  R4, [R3]
+        STT  [R4], R1
+        LI   R5, 1
+        ADD  R4, R4, R5
+        STW  [R3], R4
+        RET
+
+pe_snap:
+        LI   R2, 1
+        LI   R3, pe_uok
+        STW  [R3], R2
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        LI   R3, pe_ulen
+        STW  [R3], R4
+        LI   R2, pe_cur
+        LDW  R5, [R2]
+        LI   R3, pe_ucur
+        STW  [R3], R5
+        LI   R6, 0
+pe_snl:
+        TCMP R2, R6, R4
+        B3   R2, pe_snm, pe_snd, pe_snd
+pe_snm:
+        LI   R2, pe_buf
+        ADD  R2, R2, R6
+        LDT  R3, [R2]
+        LI   R2, pe_usnap
+        ADD  R2, R2, R6
+        STT  [R2], R3
+        LI   R2, 1
+        ADD  R6, R6, R2
+        B    pe_snl
+pe_snd:
+        RET
+
+pe_swap:
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        LI   R2, pe_ulen
+        LDW  R5, [R2]
+        MOV  R6, R4
+        TCMP R2, R5, R4
+        B3   R2, pe_swmn, pe_swm0, pe_swm0
+pe_swmn:
+        MOV  R6, R5
+pe_swm0:
+        LI   R7, 0
+pe_swpl:
+        TCMP R2, R7, R6
+        B3   R2, pe_swpm, pe_swpd, pe_swpd
+pe_swpm:
+        LI   R2, pe_buf
+        ADD  R2, R2, R7
+        LDT  R1, [R2]
+        LI   R3, pe_usnap
+        ADD  R3, R3, R7
+        LDT  R5, [R3]
+        STT  [R3], R1
+        STT  [R2], R5
+        LI   R2, 1
+        ADD  R7, R7, R2
+        B    pe_swpl
+pe_swpd:
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        LI   R2, pe_ulen
+        LDW  R5, [R2]
+        TCMP R2, R4, R5
+        B3   R2, pe_swhl, pe_swlen, pe_swhu
+pe_swhl:
+        MOV  R7, R4
+pe_swhll:
+        TCMP R2, R7, R5
+        B3   R2, pe_swhlm, pe_swlen, pe_swlen
+pe_swhlm:
+        LI   R3, pe_usnap
+        ADD  R3, R3, R7
+        LDT  R1, [R3]
+        LI   R3, pe_buf
+        ADD  R3, R3, R7
+        STT  [R3], R1
+        LI   R3, 1
+        ADD  R7, R7, R3
+        B    pe_swhll
+pe_swhu:
+        MOV  R7, R5
+pe_swhul:
+        TCMP R2, R7, R4
+        B3   R2, pe_swhum, pe_swlen, pe_swlen
+pe_swhum:
+        LI   R3, pe_buf
+        ADD  R3, R3, R7
+        LDT  R1, [R3]
+        LI   R3, pe_usnap
+        ADD  R3, R3, R7
+        STT  [R3], R1
+        LI   R3, 1
+        ADD  R7, R7, R3
+        B    pe_swhul
+pe_swlen:
+        LI   R2, pe_len
+        STW  [R2], R5
+        LI   R2, pe_ulen
+        STW  [R2], R4
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        LI   R2, pe_ucur
+        LDW  R5, [R2]
+        LI   R2, pe_cur
+        STW  [R2], R5
+        LI   R2, pe_ucur
+        STW  [R2], R4
+        RET
+
+pe_uapp:
+        LI   R2, pe_us8
+        STW  [R2], R8
+        LI   R2, pe_uok
+        LDW  R3, [R2]
+        B3   R3, pe_uag, pe_uax, pe_uag
+pe_uag:
+        CALL pe_swap
+        LI   R2, 1
+        LI   R3, pe_dir
+        STW  [R3], R2
+        LI   R3, -1
+        LI   R2, pe_mark
+        STW  [R2], R3
+pe_uax:
+        LI   R2, pe_us8
+        LDW  R8, [R2]
+        RET
+
+pe_estr:
+        LDT  R5, [R1]
+        B3   R5, pe_estd, pe_estd, pe_estg
+pe_estd:
+        RET
+pe_estg:
+        LI   R3, pe_fp
+        LDW  R4, [R3]
+        STT  [R4], R5
+        LI   R5, 1
+        ADD  R4, R4, R5
+        STW  [R3], R4
+        ADD  R1, R1, R5
+        B    pe_estr
+
+pe_flush:
+        LI   R3, pe_fp
+        LDW  R4, [R3]
+        STT  [R4], R0
+        LI   R1, pe_fr
+        SYS  10
+        SYS  31
+        RET
+
+pe_clr:
+        LI   R2, pe_ra
+        STW  [R2], R8
+        LI   R3, pe_fp
+        LI   R4, pe_fr
+        STW  [R3], R4
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 50
+        CALL pe_ech
+        LI   R1, 74
+        CALL pe_ech
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 72
+        CALL pe_ech
+        CALL pe_flush
+        LI   R2, pe_ra
+        LDW  R8, [R2]
+        RET
+
+pe_dig:
+        LI   R7, 0
+        LI   R6, 10000
+        LI   R5, 0
+pe_dgl1:
+        TCMP R4, R1, R6
+        B3   R4, pe_dgd1, pe_dgd1, pe_dgs1
+pe_dgs1:
+        NEG  R4, R6
+        ADD  R1, R1, R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        B    pe_dgl1
+pe_dgd1:
+        B3   R5, pe_dgz1, pe_dgz1, pe_dgp1
+pe_dgz1:
+        B3   R7, pe_dgn1, pe_dgn1, pe_dgp1
+pe_dgp1:
+        LI   R7, 1
+        LI   R4, 48
+        ADD  R4, R4, R5
+        LI   R3, pe_fp
+        LDW  R5, [R3]
+        STT  [R5], R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        STW  [R3], R5
+pe_dgn1:
+        LI   R6, 1000
+        LI   R5, 0
+pe_dgl2:
+        TCMP R4, R1, R6
+        B3   R4, pe_dgd2, pe_dgd2, pe_dgs2
+pe_dgs2:
+        NEG  R4, R6
+        ADD  R1, R1, R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        B    pe_dgl2
+pe_dgd2:
+        B3   R5, pe_dgz2, pe_dgz2, pe_dgp2
+pe_dgz2:
+        B3   R7, pe_dgn2, pe_dgn2, pe_dgp2
+pe_dgp2:
+        LI   R7, 1
+        LI   R4, 48
+        ADD  R4, R4, R5
+        LI   R3, pe_fp
+        LDW  R5, [R3]
+        STT  [R5], R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        STW  [R3], R5
+pe_dgn2:
+        LI   R6, 100
+        LI   R5, 0
+pe_dgl3:
+        TCMP R4, R1, R6
+        B3   R4, pe_dgd3, pe_dgd3, pe_dgs3
+pe_dgs3:
+        NEG  R4, R6
+        ADD  R1, R1, R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        B    pe_dgl3
+pe_dgd3:
+        B3   R5, pe_dgz3, pe_dgz3, pe_dgp3
+pe_dgz3:
+        B3   R7, pe_dgn3, pe_dgn3, pe_dgp3
+pe_dgp3:
+        LI   R7, 1
+        LI   R4, 48
+        ADD  R4, R4, R5
+        LI   R3, pe_fp
+        LDW  R5, [R3]
+        STT  [R5], R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        STW  [R3], R5
+pe_dgn3:
+        LI   R6, 10
+        LI   R5, 0
+pe_dgl4:
+        TCMP R4, R1, R6
+        B3   R4, pe_dgd4, pe_dgd4, pe_dgs4
+pe_dgs4:
+        NEG  R4, R6
+        ADD  R1, R1, R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        B    pe_dgl4
+pe_dgd4:
+        B3   R5, pe_dgz4, pe_dgz4, pe_dgp4
+pe_dgz4:
+        B3   R7, pe_dgu, pe_dgu, pe_dgp4
+pe_dgp4:
+        LI   R4, 48
+        ADD  R4, R4, R5
+        LI   R3, pe_fp
+        LDW  R5, [R3]
+        STT  [R5], R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        STW  [R3], R5
+        LI   R5, 0
+pe_dgu:
+        LI   R4, 48
+        ADD  R4, R4, R1
+        LI   R3, pe_fp
+        LDW  R5, [R3]
+        STT  [R5], R4
+        LI   R4, 1
+        ADD  R5, R5, R4
+        STW  [R3], R5
+        RET
+
+pe_row:
+        LI   R2, pe_rb
+        STW  [R2], R8
+        LI   R2, pe_s
+        LDW  R6, [R2]
+        LI   R2, pe_len
+        LDW  R7, [R2]
+        TCMP R2, R6, R7
+        B3   R2, pe_rws, pe_rws, pe_rwe
+pe_rwe:
+        B    pe_reol
+pe_rws:
+        MOV  R3, R6
+pe_rwsl:
+        TCMP R2, R3, R7
+        B3   R2, pe_rwsc, pe_rwsn, pe_rwsn
+pe_rwsn:
+        B    pe_rwn
+pe_rwsc:
+        LI   R2, pe_buf
+        ADD  R2, R2, R3
+        LDT  R1, [R2]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_rwsx, pe_rwsy, pe_rwsx
+pe_rwsy:
+        B    pe_rwl
+pe_rwsx:
+        LI   R2, 1
+        ADD  R3, R3, R2
+        B    pe_rwsl
+pe_rwl:
+        LI   R2, pe_t2
+        STW  [R2], R3
+        B    pe_rhw
+pe_rwn:
+        LI   R2, pe_t2
+        STW  [R2], R7
+pe_rhw:
+        LI   R2, pe_off
+        LDW  R3, [R2]
+        ADD  R6, R6, R3
+        LI   R3, 64
+        ADD  R3, R6, R3
+        LI   R2, pe_t2
+        LDW  R4, [R2]
+        TCMP R2, R3, R4
+        B3   R2, pe_rwm, pe_rwm, pe_rwe2
+pe_rwm:
+        MOV  R4, R3
+pe_rwe2:
+        LI   R2, pe_t1
+        STW  [R2], R4
+pe_rwl2:
+        LI   R2, pe_t1
+        LDW  R4, [R2]
+        TCMP R2, R6, R4
+        B3   R2, pe_rwc, pe_rwd, pe_rwd
+pe_rwd:
+        LI   R2, pe_shi
+        LDW  R3, [R2]
+        B3   R3, pe_rup, pe_rwq0, pe_rwq0
+pe_rwq0:
+        TCMP R2, R6, R3
+        B3   R2, pe_rup, pe_rweq, pe_rup
+pe_rweq:
+        CALL pe_eof
+        B    pe_rup
+pe_rwc:
+        LI   R2, pe_slo
+        LDW  R3, [R2]
+        B3   R3, pe_rwchr, pe_rws0, pe_rws0
+pe_rws0:
+        TCMP R2, R6, R3
+        B3   R2, pe_rws1, pe_rwon, pe_rws1
+pe_rws1:
+        LI   R2, pe_shi
+        LDW  R3, [R2]
+        TCMP R2, R6, R3
+        B3   R2, pe_rwchr, pe_rwoff, pe_rwchr
+pe_rwon:
+        CALL pe_eon
+        B    pe_rwchr
+pe_rwoff:
+        CALL pe_eof
+pe_rwchr:
+        LI   R2, pe_buf
+        ADD  R2, R2, R6
+        LDT  R1, [R2]
+        CALL pe_ech
+        LI   R2, 1
+        ADD  R6, R6, R2
+        B    pe_rwl2
+pe_rup:
+        LI   R2, pe_t2
+        LDW  R3, [R2]
+        TCMP R2, R3, R7
+        B3   R2, pe_rul, pe_rue, pe_rue
+pe_rul:
+        LI   R2, 1
+        ADD  R3, R3, R2
+        LI   R2, pe_s
+        STW  [R2], R3
+        B    pe_reol
+pe_rue:
+        LI   R2, 1
+        ADD  R3, R7, R2
+        LI   R2, pe_s
+        STW  [R2], R3
+pe_reol:
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 75
+        CALL pe_ech
+        LI   R1, 10
+        CALL pe_ech
+        LI   R2, pe_rb
+        LDW  R8, [R2]
+        RET
+
+pe_stat:
+        LI   R2, pe_rb
+        STW  [R2], R8
+        LI   R2, pe_ask
+        LDW  R3, [R2]
+        B3   R3, pe_stn, pe_stn, pe_sta
+pe_sta:
+        LI   R1, pe_s7
+        CALL pe_estr
+        B    pe_stk
+pe_stn:
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 55
+        CALL pe_ech
+        LI   R1, 109
+        CALL pe_ech
+        LI   R2, pe_note
+        LDW  R3, [R2]
+        B3   R3, pe_stb0, pe_stb0, pe_stn1
+pe_stn1:
+        LI   R4, 1
+        TCMP R2, R3, R4
+        B3   R2, pe_stn2, pe_stsv, pe_stn2
+pe_stsv:
+        LI   R1, pe_s3
+        CALL pe_estr
+        LI   R2, pe_id
+        LDW  R1, [R2]
+        CALL pe_dig
+        B    pe_strm
+pe_stn2:
+        LI   R4, 2
+        TCMP R2, R3, R4
+        B3   R2, pe_stn3, pe_stf, pe_stn3
+pe_stf:
+        LI   R1, pe_s4
+        CALL pe_estr
+        B    pe_strm
+pe_stn3:
+        LI   R4, 3
+        TCMP R2, R3, R4
+        B3   R2, pe_stb0, pe_stb, pe_stb0
+pe_stb:
+        LI   R1, pe_s5
+        CALL pe_estr
+pe_strm:
+        LI   R2, pe_note
+        STW  [R2], R0
+        B    pe_sth2
+pe_stb0:
+        LI   R1, pe_s2
+        CALL pe_estr
+pe_sth2:
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 48
+        CALL pe_ech
+        LI   R1, 109
+        CALL pe_ech
+pe_stk:
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 75
+        CALL pe_ech
+        LI   R2, pe_rb
+        LDW  R8, [R2]
+        RET
+
+pe_draw:
+        LI   R2, pe_ra
+        STW  [R2], R8
+        LI   R3, -1
+        LI   R2, pe_slo
+        STW  [R2], R3
+        LI   R2, pe_shi
+        STW  [R2], R3
+        LI   R2, pe_mark
+        LDW  R6, [R2]
+        B3   R6, pe_dframe, pe_dmk, pe_dmk
+pe_dmk:
+        LI   R2, pe_cur
+        LDW  R7, [R2]
+        TCMP R2, R6, R7
+        B3   R2, pe_dlo, pe_dframe, pe_dhi
+pe_dlo:
+        LI   R2, pe_slo
+        STW  [R2], R6
+        LI   R2, pe_shi
+        STW  [R2], R7
+        B    pe_dframe
+pe_dhi:
+        LI   R2, pe_slo
+        STW  [R2], R7
+        LI   R2, pe_shi
+        STW  [R2], R6
+pe_dframe:
+        LI   R3, pe_fp
+        LI   R4, pe_fr
+        STW  [R3], R4
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 72
+        CALL pe_ech
+        LI   R2, pe_cur
+        LDW  R5, [R2]
+        MOV  R6, R5
+pe_dwl:
+        B3   R6, pe_dwz, pe_dwz, pe_dws
+pe_dwz:
+        LI   R6, 0
+        B    pe_dww
+pe_dws:
+        LI   R3, pe_buf
+        ADD  R3, R3, R6
+        LDT  R1, [R3-1]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_dwd, pe_dww, pe_dwd
+pe_dwd:
+        LI   R2, -1
+        ADD  R6, R6, R2
+        B    pe_dwl
+pe_dww:
+        NEG  R3, R6
+        ADD  R3, R3, R5
+        LI   R2, pe_cc
+        STW  [R2], R3
+        LI   R2, pe_top
+        LDW  R6, [R2]
+        LI   R7, 0
+pe_drl2:
+        TCMP R2, R6, R5
+        B3   R2, pe_drc2, pe_drd2, pe_drd2
+pe_drd2:
+        B    pe_drw
+pe_drc2:
+        LI   R3, pe_buf
+        ADD  R3, R3, R6
+        LDT  R1, [R3]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_drn, pe_dry, pe_drn
+pe_dry:
+        LI   R2, 1
+        ADD  R7, R7, R2
+pe_drn:
+        LI   R2, 1
+        ADD  R6, R6, R2
+        B    pe_drl2
+pe_drw:
+        LI   R2, pe_cr
+        STW  [R2], R7
+        LI   R2, pe_top
+        LDW  R6, [R2]
+        LI   R5, 0
+        LI   R7, 0
+pe_dal:
+        TCMP R2, R5, R6
+        B3   R2, pe_dab, pe_dad, pe_dad
+pe_dab:
+        LI   R3, pe_buf
+        ADD  R3, R3, R5
+        LDT  R1, [R3]
+        LI   R2, 10
+        TCMP R2, R1, R2
+        B3   R2, pe_dan, pe_day, pe_dan
+pe_day:
+        LI   R2, 1
+        ADD  R7, R7, R2
+pe_dan:
+        LI   R2, 1
+        ADD  R5, R5, R2
+        B    pe_dal
+pe_dad:
+        LI   R2, pe_cr
+        LDW  R3, [R2]
+        ADD  R7, R7, R3
+        LI   R2, 1
+        ADD  R7, R7, R2
+        LI   R2, pe_rnum
+        STW  [R2], R7
+        LI   R2, pe_cc
+        LDW  R3, [R2]
+        LI   R2, 1
+        ADD  R3, R3, R2
+        LI   R2, pe_cnum
+        STW  [R2], R3
+        LI   R2, pe_off
+        LDW  R6, [R2]
+        LI   R2, pe_cc
+        LDW  R3, [R2]
+        TCMP R2, R3, R6
+        B3   R2, pe_dol, pe_dok, pe_dog
+pe_dol:
+        LI   R2, pe_off
+        STW  [R2], R3
+        B    pe_dok
+pe_dog:
+        LI   R2, -63
+        ADD  R2, R3, R2
+        TCMP R4, R6, R2
+        B3   R4, pe_doa, pe_dok, pe_dok
+pe_doa:
+        LI   R2, -63
+        ADD  R2, R3, R2
+        LI   R4, pe_off
+        STW  [R4], R2
+pe_dok:
+        LI   R2, pe_r
+        STW  [R2], R0
+        LI   R2, pe_top
+        LDW  R3, [R2]
+        LI   R2, pe_s
+        STW  [R2], R3
+pe_drl3:
+        CALL pe_row
+        LI   R2, pe_r
+        LDW  R3, [R2]
+        LI   R4, 1
+        ADD  R3, R3, R4
+        STW  [R2], R3
+        LI   R4, -19
+        ADD  R4, R3, R4
+        B3   R4, pe_drl3, pe_drs, pe_drs
+pe_drs:
+        CALL pe_stat
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R2, pe_cr
+        LDW  R1, [R2]
+        LI   R3, 1
+        ADD  R1, R1, R3
+        CALL pe_dig
+        LI   R1, 59
+        CALL pe_ech
+        LI   R2, pe_cc
+        LDW  R1, [R2]
+        LI   R2, pe_off
+        LDW  R3, [R2]
+        NEG  R3, R3
+        ADD  R1, R1, R3
+        LI   R3, 1
+        ADD  R1, R1, R3
+        CALL pe_dig
+        LI   R1, 72
+        CALL pe_ech
+        CALL pe_flush
+        LI   R2, pe_ra
+        LDW  R8, [R2]
+        RET
+
+pe_save:
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        LI   R3, 10
+        ADD  R4, R4, R3
+        LI   R2, pe_id
+        LDW  R5, [R2]
+        B3   R5, pe_svn, pe_sva, pe_tvo
+pe_tvo: B    pe_svo
+pe_svn:
+        B    pe_sva
+pe_svo:
+        MOV  R1, R5
+        SYS  21
+        B3   R1, pe_svf, pe_svf, pe_svg
+pe_svf:
+        LI   R2, pe_id
+        STW  [R2], R0
+        B    pe_sva
+pe_svg:
+        LI   R2, pe_ann
+        LDW  R3, [R2]
+        TCMP R2, R4, R3
+        B3   R2, pe_svi, pe_svi, pe_sva
+pe_svi:
+        LI   R3, 9
+        ADD  R1, R1, R3
+        LI   R2, pe_t1
+        STW  [R2], R1
+        LI   R6, 0
+pe_svcl:
+        LI   R2, pe_len
+        LDW  R3, [R2]
+        TCMP R2, R6, R3
+        B3   R2, pe_svcg, pe_svcn, pe_svcn
+pe_svcn:
+        B    pe_svcw
+pe_svcg:
+        LI   R3, pe_buf
+        ADD  R3, R3, R6
+        LDT  R1, [R3]
+        LI   R2, pe_t1
+        LDW  R5, [R2]
+        ADD  R5, R5, R6
+        STT  [R5], R1
+        LI   R3, 1
+        ADD  R6, R6, R3
+        B    pe_svcl
+pe_svcw:
+        LI   R2, pe_t1
+        LDW  R5, [R2]
+        ADD  R5, R5, R6
+        STT  [R5], R0
+        B    pe_svd
+pe_sva:
+        LI   R1, 6
+        MOV  R2, R4
+        SYS  20
+        B3   R1, pe_svm, pe_svm, pe_svg2
+pe_svm:
+        B    pe_svf2
+pe_svf2:
+        LI   R2, 2
+        LI   R3, pe_note
+        STW  [R3], R2
+        RET
+pe_svg2:
+        MOV  R6, R1
+        SYS  21
+        LI   R2, pe_t1
+        STW  [R2], R1
+        LI   R2, pe_t2
+        STW  [R2], R6
+        LI   R2, pe_id
+        LDW  R1, [R2]
+        B3   R1, pe_svn0, pe_svn0, pe_svnco
+pe_svn0:
+        LI   R7, 0
+pe_svzl:
+        LI   R2, 9
+        TCMP R2, R7, R2
+        B3   R2, pe_svzz, pe_svzd, pe_svzd
+pe_svzz:
+        LI   R2, pe_t1
+        LDW  R5, [R2]
+        ADD  R5, R5, R7
+        STT  [R5], R0
+        LI   R2, 1
+        ADD  R7, R7, R2
+        B    pe_svzl
+pe_svzd:
+        B    pe_svp9
+pe_svnco:
+        SYS  21
+        LI   R7, 0
+pe_svcl2:
+        LI   R2, 9
+        TCMP R2, R7, R2
+        B3   R2, pe_svz2, pe_svzd2, pe_svzd2
+pe_svz2:
+        ADD  R3, R1, R7
+        LDT  R4, [R3]
+        LI   R2, pe_t1
+        LDW  R5, [R2]
+        ADD  R5, R5, R7
+        STT  [R5], R4
+        LI   R2, 1
+        ADD  R7, R7, R2
+        B    pe_svcl2
+pe_svzd2:
+pe_svp9:
+        LI   R2, pe_t1
+        LDW  R5, [R2]
+        LI   R3, 9
+        ADD  R5, R5, R3
+        STW  [R2], R5
+        LI   R6, 0
+pe_svnl:
+        LI   R2, pe_len
+        LDW  R3, [R2]
+        TCMP R2, R6, R3
+        B3   R2, pe_svng, pe_svnn, pe_svnn
+pe_svnn:
+        B    pe_svnw
+pe_svng:
+        LI   R3, pe_buf
+        ADD  R3, R3, R6
+        LDT  R1, [R3]
+        LI   R2, pe_t1
+        LDW  R5, [R2]
+        ADD  R5, R5, R6
+        STT  [R5], R1
+        LI   R3, 1
+        ADD  R6, R6, R3
+        B    pe_svnl
+pe_svnw:
+        LI   R2, pe_t1
+        LDW  R5, [R2]
+        ADD  R5, R5, R6
+        STT  [R5], R0
+        LI   R2, pe_id
+        LDW  R1, [R2]
+        B3   R1, pe_svk, pe_svk, pe_svdel
+pe_svk:
+        B    pe_svnu
+pe_svdel:
+        SYS  22
+pe_svnu:
+        LI   R2, pe_t2
+        LDW  R3, [R2]
+        LI   R2, pe_id
+        STW  [R2], R3
+        LI   R2, pe_len
+        LDW  R3, [R2]
+        LI   R2, 10
+        ADD  R3, R3, R2
+        LI   R2, pe_ann
+        STW  [R2], R3
+pe_svd:
+        LI   R2, pe_dir
+        STW  [R2], R0
+        LI   R2, 1
+        LI   R3, pe_note
+        STW  [R3], R2
+        RET
+
+pe_kmrk:
+        LI   R2, pe_mark
+        LDW  R3, [R2]
+        LI   R4, pe_cur
+        LDW  R5, [R4]
+        B3   R3, pe_kms, pe_kmc, pe_kmc
+pe_kms:
+        STW  [R2], R5
+        B    pe_red
+pe_kmc:
+        LI   R5, -1
+        STW  [R2], R5
+        B    pe_red
+
+pe_eon:
+        LI   R2, pe_t8
+        STW  [R2], R8
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 55
+        CALL pe_ech
+        LI   R1, 109
+        CALL pe_ech
+        LI   R2, pe_t8
+        LDW  R8, [R2]
+        RET
+
+pe_eof:
+        LI   R2, pe_t8
+        STW  [R2], R8
+        LI   R1, 27
+        CALL pe_ech
+        LI   R1, 91
+        CALL pe_ech
+        LI   R1, 48
+        CALL pe_ech
+        LI   R1, 109
+        CALL pe_ech
+        LI   R2, pe_t8
+        LDW  R8, [R2]
+        RET
+
+pe_mrg:
+        LI   R2, pe_mark
+        LDW  R3, [R2]
+        LI   R2, pe_cur
+        LDW  R4, [R2]
+        TCMP R2, R3, R4
+        B3   R2, pe_mrg_a, pe_mrg_e, pe_mrg_b
+pe_mrg_a:
+        LI   R2, pe_t1
+        STW  [R2], R3
+        LI   R2, pe_t2
+        STW  [R2], R4
+        B    pe_mrg_ok
+pe_mrg_b:
+        LI   R2, pe_t1
+        STW  [R2], R4
+        LI   R2, pe_t2
+        STW  [R2], R3
+pe_mrg_ok:
+        LI   R1, 1
+        RET
+pe_mrg_e:
+        LI   R1, 0
+        RET
+
+pe_cutsel:
+        LI   R2, pe_cp8
+        STW  [R2], R8
+        CALL pe_mrg
+        B3   R1, pe_ctr0, pe_ctr0, pe_ctr1
+pe_ctr0:
+        LI   R3, -1
+        LI   R2, pe_mark
+        STW  [R2], R3
+        LI   R1, 0
+        B    pe_ctrx
+pe_ctr1:
+        CALL pe_fcl
+        CALL pe_rdel
+pe_ctrx:
+        LI   R2, pe_cp8
+        LDW  R8, [R2]
+        RET
+
+pe_copyr:
+        LI   R2, pe_cp8
+        STW  [R2], R8
+        CALL pe_mrg
+        B3   R1, pe_cpr0, pe_cpr0, pe_cpr1
+pe_cpr1:
+        CALL pe_fcl
+pe_cpr0:
+        LI   R3, -1
+        LI   R2, pe_mark
+        STW  [R2], R3
+        LI   R2, pe_cp8
+        LDW  R8, [R2]
+        RET
+
+pe_delr:
+        LI   R2, pe_cp8
+        STW  [R2], R8
+        CALL pe_mrg
+        B3   R1, pe_dlr0, pe_dlr0, pe_dlr1
+pe_dlr0:
+        LI   R3, -1
+        LI   R2, pe_mark
+        STW  [R2], R3
+        LI   R1, 0
+        B    pe_dlrx
+pe_dlr1:
+        CALL pe_rdel
+pe_dlrx:
+        LI   R2, pe_cp8
+        LDW  R8, [R2]
+        RET
+
+pe_rdel:
+        LI   R2, pe_rd8
+        STW  [R2], R8
+        CALL pe_snap
+        LI   R2, pe_t1
+        LDW  R3, [R2]
+        LI   R2, pe_t2
+        LDW  R6, [R2]
+        NEG  R5, R3
+        ADD  R6, R6, R5
+        LI   R2, pe_len
+        LDW  R4, [R2]
+        NEG  R7, R6
+        ADD  R7, R7, R4
+pe_rdmv:
+        TCMP R2, R3, R7
+        B3   R2, pe_rdmm, pe_rdmd, pe_rdmd
+pe_rdmm:
+        ADD  R1, R3, R6
+        LI   R2, pe_buf
+        ADD  R5, R2, R3
+        ADD  R2, R2, R1
+        LDT  R1, [R2]
+        STT  [R5], R1
+        LI   R2, 1
+        ADD  R3, R3, R2
+        B    pe_rdmv
+pe_rdmd:
+        LI   R2, pe_len
+        STW  [R2], R7
+        LI   R2, pe_t1
+        LDW  R3, [R2]
+        LI   R2, pe_cur
+        STW  [R2], R3
+        LI   R3, -1
+        LI   R2, pe_mark
+        STW  [R2], R3
+        LI   R1, 1
+        LI   R2, pe_rd8
+        LDW  R8, [R2]
+        RET
+
+pe_id:  .word 0
+pe_m0:  .word 0
+pe_ann: .word 0
+pe_len: .word 0
+pe_cur: .word 0
+pe_top: .word 0
+pe_off: .word 0
+pe_dir: .word 0
+pe_ask: .word 0
+pe_note: .word 0
+pe_fp:  .word 0
+pe_r:   .word 0
+pe_s:   .word 0
+pe_cr:  .word 0
+pe_cc:  .word 0
+pe_ra:  .word 0
+pe_rb:  .word 0
+pe_t1:  .word 0
+pe_t2:  .word 0
+pe_k:   .word 0
+pe_arg: .word 0
+pe_hn:  .word 0
+pe_rnum: .word 0
+pe_cnum: .word 0
+pe_clen: .word 0
+pe_cp8:  .word 0
+pe_uok:  .word 0
+pe_ulen: .word 0
+pe_ucur: .word 0
+pe_us8:  .word 0
+pe_mark: .word -1
+pe_slo:  .word -1
+pe_shi:  .word -1
+pe_t8:   .word 0
+pe_rd8:  .word 0
+
+pe_s2:  .tryte " ^S-save ^Q-quit ^X-cut ^C-copy ^V-paste ^Z-undo ^Y-redo ^6-mark\0"
+pe_s3:  .tryte " saved id \0"
+pe_s4:  .tryte " STORE FULL!\0"
+pe_s5:  .tryte " BUFFER FULL!\0"
+pe_s7:  .tryte "unsaved! y save / n ditch / esc back\0"
+pe_mbig: .tryte "\np: object over 2048 trytes - too big\n\0"
+
+pe_buf:
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+pe_fr:
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+pe_clip:
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+pe_usnap:
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
+        .word 0,0,0,0,0,0,0,0
